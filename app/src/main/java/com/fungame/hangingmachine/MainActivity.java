@@ -2,44 +2,38 @@ package com.fungame.hangingmachine;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
 
-public class MainActivity extends AppCompatActivity
+import com.fungame.hangingmachine.fragment.HtmlFragment;
+import com.fungame.hangingmachine.fragment.NavInfoFragment;
+import com.fungame.hangingmachine.fragment.NavMoneyFragment;
+import com.fungame.hangingmachine.fragment.OneClickFragment;
+import com.fungame.hangingmachine.fragment.UserManagerFragment;
+
+public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private FragmentManager mfManger;
+    private FrameLayout flContainer;
+    private Fragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+        initView();
+        initParams();
+        initListeners();
     }
 
     @Override
@@ -80,22 +74,83 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camara) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        boolean needChange = false;
+        if (id == R.id.nav_info) { // 我的信息
+            needChange = true;
+        } else if (id == R.id.nav_money) { // 我的推广、提现
+            needChange = true;
+        } else if (id == R.id.nav_users_manager) { // 下线管理
+            needChange = true;
+        } else if (id == R.id.nav_one_click) { // 一键挂机
+            needChange = true;
+        } else if (id == R.id.nav_official_site) { // 官方网站
+            needChange = true;
+        }
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if(needChange){
+            mfManger.beginTransaction().replace(R.id.flContainer, getFragment(id)).commit();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void initParams() {
+        mfManger = getSupportFragmentManager();
+        mfManger.beginTransaction().add(R.id.flContainer, getFragment(R.id.nav_info)).commit();
+    }
+
+    @Override
+    public void initView() {
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.setDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        /////////////////自己添加的控件
+        flContainer = (FrameLayout)findViewById(R.id.flContainer);
+
+    }
+
+    @Override
+    public void initListeners() {
+
+    }
+
+    public Fragment getFragment(int id) {
+        Fragment infoFragment = null;
+        if(id == R.id.nav_info) {
+            infoFragment = new NavInfoFragment();
+        } else if (id == R.id.nav_money){
+            infoFragment = new NavMoneyFragment();
+        } else if (id == R.id.nav_one_click){
+            infoFragment = new OneClickFragment();
+        } else if (id == R.id.nav_users_manager){
+            infoFragment = new UserManagerFragment();
+        } else if (id == R.id.nav_official_site){
+            infoFragment = new HtmlFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("data", "http://www.eguaji.cc/index.html");
+            infoFragment.setArguments(bundle);
+        }
+        return infoFragment;
     }
 }

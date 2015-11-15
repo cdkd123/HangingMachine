@@ -7,6 +7,12 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.fungame.hangingmachine.R;
+import com.fungame.hangingmachine.adapter.DataAdapter;
+import com.fungame.hangingmachine.entity.User;
+import com.fungame.hangingmachine.entity.UserItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by tom on 2015/11/13.
@@ -38,6 +44,10 @@ public class UserManagerFragment extends BaseFragment {
         View headView = View.inflate(this.getActivity(), R.layout.user_manager_header, null);
         // 设置一些事件
         listView.addHeaderView(headView);
+        List<UserItem> list = new ArrayList<UserItem>();
+        list.add(new UserItem("test", "testButton"));
+        DataAdapter mAdapter = new DataAdapter(getActivity(), list);
+        listView.setAdapter(mAdapter);
     }
 
     @Override

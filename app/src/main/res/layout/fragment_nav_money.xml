@@ -3,11 +3,89 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/dp_20"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tvContent"
+
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="提现" />
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:id="@+id/llContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+            <EditText
+                android:id="@+id/etAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="支付宝账户"/>
+
+            <EditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="支付宝姓名"/>
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:hint="邮箱"/>
+
+            <EditText
+                android:id="@+id/etGetMoney"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:hint="提现金额"/>
+
+            <EditText
+                android:id="@+id/etQQ"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:hint="QQ号码"/>
+
+            <TextView
+                android:id="@+id/tvMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="扣除手续费实际到账金额："/>
+
+            <Button
+                android:id="@+id/btnGetMoney"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_13"
+                android:textColor="@color/text_black"
+                android:text="提现"/>
+
+
+            <TextView
+                android:id="@+id/tvTip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/red"
+                android:textSize="@dimen/sp_13"
+                android:text="@string/recharge_tip"/>
+
+
+            <Button
+                android:id="@+id/btnRecharge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/sp_13"
+                android:textColor="@color/text_black"
+                android:text="充值"/>
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
 </RelativeLayout>

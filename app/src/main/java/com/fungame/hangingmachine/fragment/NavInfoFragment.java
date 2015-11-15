@@ -52,6 +52,7 @@ public class NavInfoFragment extends BaseFragment {
         userItems.add(new UserItem(user.getAccountMoney(), "账号充值"));
         userItems.add(new UserItem(user.getSalarySpeed(), "提高佣金"));
         userItems.add(new UserItem(user.getAccountLevel(), "提交等级"));
+        userItems.add(new UserItem(user.getTodayTime(), "开始推广"));
         listView.setAdapter(new DataAdapter(this.getActivity(), userItems));
     }
 

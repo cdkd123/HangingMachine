@@ -40,4 +40,8 @@ public class User {
     public String getAcountType() {
         return acoutType.getName();
     }
+
+    public String getTodayTime() {
+        return todayWorkTime + "";
+    }
 }

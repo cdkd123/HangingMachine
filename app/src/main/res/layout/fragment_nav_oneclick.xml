@@ -1,13 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/dp_8"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tvContent"
+    <Button
+        android:id="@+id/btnOpenGuaji"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="一键挂机" />
-</RelativeLayout>
+        android:layout_height="wrap_content"
+        android:text="开通一键挂机（288元）" />
+
+    <Button
+        android:id="@+id/btnFull"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="一键加满" />
+</LinearLayout>

@@ -5,9 +5,8 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tvContent"
+    <ListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="下线管理" />
+        android:layout_height="wrap_content"></ListView>
 </RelativeLayout>

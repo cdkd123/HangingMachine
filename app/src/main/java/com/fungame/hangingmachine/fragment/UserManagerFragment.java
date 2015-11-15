@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 
 import com.fungame.hangingmachine.R;
 
@@ -12,6 +13,8 @@ import com.fungame.hangingmachine.R;
  * descripton :
  */
 public class UserManagerFragment extends BaseFragment {
+
+    private ListView listView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -31,7 +34,10 @@ public class UserManagerFragment extends BaseFragment {
 
     @Override
     public void initView(View view) {
-
+        listView = (ListView)view.findViewById(R.id.listView);
+        View headView = View.inflate(this.getActivity(), R.layout.user_manager_header, null);
+        // 设置一些事件
+        listView.addHeaderView(headView);
     }
 
     @Override

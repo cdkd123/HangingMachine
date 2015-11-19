@@ -1,7 +1,7 @@
 package com.fungame.hangingmachine;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -26,6 +26,7 @@ public class MainActivity extends BaseActivity
     private FragmentManager mfManger;
     private FrameLayout flContainer;
     private Fragment fragment;
+    private View headMainView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,12 +128,19 @@ public class MainActivity extends BaseActivity
 
         /////////////////自己添加的控件
         flContainer = (FrameLayout)findViewById(R.id.flContainer);
+//        headMainView = navigationView.getRootView().findViewById(R.id.head_main);
 
+        headMainView = navigationView.inflateHeaderView(R.layout.nav_header_main);
     }
 
     @Override
     public void initListeners() {
-
+        headMainView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(view.getContext(), LoginActivity.class));
+            }
+        });
     }
 
     public Fragment getFragment(int id) {

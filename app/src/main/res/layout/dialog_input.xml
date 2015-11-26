@@ -13,19 +13,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="text"
-        android:hint="用户名"/>
+        android:hint="新密码"/>
 
     <EditText
         android:id="@+id/etPwd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
-        android:hint="密码"/>
+        android:hint="确认新密码"/>
 
     <Button
-        android:id="@+id/btnRegister"
+        android:id="@+id/btnModify"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="注册"/>
+        android:layout_gravity="center_horizontal"
+        android:text="修改"/>
 </LinearLayout>
 

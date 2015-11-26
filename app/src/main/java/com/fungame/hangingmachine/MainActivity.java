@@ -2,6 +2,7 @@ package com.fungame.hangingmachine;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.SyncStateContract;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -9,11 +10,14 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import com.fungame.hangingmachine.entity.Const;
 import com.fungame.hangingmachine.fragment.HtmlFragment;
 import com.fungame.hangingmachine.fragment.NavInfoFragment;
 import com.fungame.hangingmachine.fragment.NavMoneyFragment;
@@ -27,9 +31,10 @@ public class MainActivity extends BaseActivity
     private FrameLayout flContainer;
     private Fragment fragment;
     private View headMainView;
+    private TextView tvName;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
@@ -63,6 +68,10 @@ public class MainActivity extends BaseActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(this, LoginActivity.class));
+            getPreferenct().edit().putString(Const.LOGIN_INFO, "").commit();
+            getPreferenct().edit().putString(Const.LOGIN_USER, "").commit();
+            finish();
             return true;
         }
 
@@ -108,15 +117,6 @@ public class MainActivity extends BaseActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-//        fab.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-//            }
-//        });
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -131,6 +131,10 @@ public class MainActivity extends BaseActivity
 //        headMainView = navigationView.getRootView().findViewById(R.id.head_main);
 
         headMainView = navigationView.inflateHeaderView(R.layout.nav_header_main);
+
+        tvName = (TextView)headMainView.findViewById(R.id.tvName);
+        String userName = getPreferenct().getString(Const.LOGIN_USER, "");
+        tvName.setText(userName);
     }
 
     @Override
@@ -138,7 +142,10 @@ public class MainActivity extends BaseActivity
         headMainView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(view.getContext(), LoginActivity.class));
+                String loginInfo = getPreferenct().getString(Const.LOGIN_INFO, "");
+                if(TextUtils.isEmpty(loginInfo)) {
+                    startActivity(new Intent(view.getContext(), LoginActivity.class));
+                }
             }
         });
     }

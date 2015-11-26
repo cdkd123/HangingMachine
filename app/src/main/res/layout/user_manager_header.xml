@@ -36,7 +36,8 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:layout_gravity="center_vertical"
-            android:text="[正式开通版180元]"/>
+            android:text="[正式开通版180元]"
+            android:id="@+id/btnOpenVersion" />
         </LinearLayout>
 
 
@@ -59,7 +60,8 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="开通挂机权限"/>
+            android:text="开通挂机权限"
+            android:id="@+id/btnOpenAuth" />
 
     </LinearLayout>
 

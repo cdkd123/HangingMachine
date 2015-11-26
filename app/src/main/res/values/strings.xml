@@ -1,10 +1,10 @@
 <resources>
-    <string name="app_name">HangingMachine</string>
+    <string name="app_name">e挂机</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_settings">设置</string>
+    <string name="action_settings">退出登录</string>
     <string name="login_account">登录账户</string>
     <string name="account_type">账户类型</string>
     <string name="account_money">账户余额</string>
@@ -12,4 +12,8 @@
     <string name="account_level">账户等级</string>
     <string name="recharge_tip">充值说明：\n1.打开转账页面付款说明填写你的用户名 \n2.验证用户名是否正确 \n3.确认付款成功 \n4.付款成功，1分钟内到账 \n重点：付款说明添加充值账号，否则充值不成功</string>
 
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="tip_for_update_user_level">正式版用户拥有开通下级账号功能，开通一个下级正式账号，账号等级增加一段，每小时佣金＝0.36x账号等级</string>
+    <string name="update_fail">升级失败</string>
 </resources>

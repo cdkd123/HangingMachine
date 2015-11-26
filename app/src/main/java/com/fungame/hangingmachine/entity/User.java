@@ -14,8 +14,8 @@ public class User {
 
     public User(){
         this.accountName = "张三";
-        this.acoutType = AccountType.NormalType;
-        this.accountMoney = "70.3";
+        this.acoutType = AccountType.TestType;
+        this.accountMoney = "0.0";
         this.salarySpeed = "0.5元/每小时";
         this.accountLevel = "1.5";
         this.todayWorkTime = 1500000;

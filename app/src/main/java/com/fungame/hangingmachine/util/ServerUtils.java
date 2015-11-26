@@ -1,12 +1,25 @@
 package com.fungame.hangingmachine.util;
 
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
 
 /**
  * Created by tom on 2015/11/19.
@@ -15,6 +28,7 @@ import java.net.Socket;
 public class ServerUtils {
 
     private static SocketCallBack callBack;
+    private boolean hasReceive = false;
 
     public interface SocketCallBack{
         public void getCallBack(String back);
@@ -73,39 +87,64 @@ public class ServerUtils {
         return s;
     }
 
-    public void sendCommand(final String s, final SocketCallBack cb) {
+    public void sendCommand(final String str, final SocketCallBack cb) {
 
             callBack = cb;
-            new Thread(){
-                @Override
-                public void run(){
-                    try {
-                        Socket sock = null;
-                        try {
-                           sock = new Socket("58.221.58.99", 347);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                        OutputStream outputStream = sock.getOutputStream();
-                        InputStream inputStream = sock.getInputStream();
-//                        byte[] outBuffer = s.getBytes();
-                        byte[] outBuffer = get16Byte(s);
-                        outputStream.write(outBuffer, 0, outBuffer.length);
-                        outputStream.flush();
-                        byte[] buffer = new byte[1024];
-                        inputStream.read(buffer);
-//                        String receiver  = new String(buffer);
-                        String receiver = toStringHex(buffer);
-                        Message msg = handler.obtainMessage();
-                        msg.obj = receiver;
-                        msg.what = 100;
-                        Log.i("--tom", "get result:" + receiver);
-                        handler.sendMessage(msg);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
-            }.start();
+//            new Thread(){
+//                @Override
+//                public void run() {
+//                        try {
+//                            //建立Socket
+////                            Socket s = new Socket("58.221.58.190", 347);
+////                            Socket s = new Socket("192.168.1.24", 1000);
+//                            int TIME_OUT = 30000;
+//                            SocketChannel client = SocketChannel.open();
+////                            InetSocketAddress isa = new InetSocketAddress("58.221.58.190", 347);
+//
+//                            Socket socket = new Socket();
+//                            SocketAddress address = new InetSocketAddress("58.221.58.190", 347);
+//                            socket.connect(address, TIME_OUT);
+//                            socket.setSoTimeout(TIME_OUT);
+//                            BufferedReader in = new BufferedReader(new InputStreamReader(
+//                                    socket.getInputStream()));
+//
+//                            PrintWriter out = new PrintWriter(new BufferedWriter(
+//                                    new OutputStreamWriter(socket.getOutputStream())), true);
+//
+//                            System.out.println("ready to write:" + str);
+//                            out.println(str.getBytes("UTF-8"));
+////                            out.write(str);
+//                            out.flush();
+//                            while (true) {
+//                                try {
+//                                    if (!socket.isClosed() && socket.isConnected()
+//                                            && !socket.isInputShutdown()) {
+////                                        byte[] lenBuffer = new byte[1024];
+////                                        int len = 0;
+//                                        try {
+//                                            String tmp = in.readLine();
+//                                            System.out.println("read line lenth:" + tmp);
+//                                        } catch (Exception e) {
+//                                            System.out.println("1111 SocketSvr socket read timeout");
+//                                        }
+//                                    }
+//                                } catch (Exception ex) {
+//                                    ex.printStackTrace();
+//                                }
+//                            }
+//
+////                            brNet.close();
+////                            s.close();
+//                        } catch (Exception e) {
+//                            e.printStackTrace();
+//                        }
+//                }
+//            }.start();
+
+
+        onCreate(str, callBack);
+
+
 
 //        new Thread(){
 //            @Override
@@ -138,6 +177,85 @@ public class ServerUtils {
 //
 //            }
 //        }.start();
+    }
+
+    InputStream reader;
+    OutputStream writer;
+    Socket socket;
+
+
+    public void onCreate(final String command, final SocketCallBack callBack) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    //初始化socket
+                    if(socket == null){
+                        socket = new Socket("58.221.58.190", 347);
+                    }
+//                    writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+//                    reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    reader = socket.getInputStream();
+                    writer = socket.getOutputStream();
+                    System.out.println("成功连接服务器！");
+                    dataSend(command);
+                    if(!hasReceive){
+                        dataReceived();
+                    }
+                } catch (IOException e) {
+                    System.out.println(e);
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+    //接收到数据的处理方法
+    private void dataReceived(){
+        final AsyncTask<Void,String,Void> read=new AsyncTask<Void, String, Void>() {
+            protected Void doInBackground(Void... params) {
+                String line;
+                try {
+                    hasReceive = true;
+                    byte[]  buffer = new byte[1024];
+                    while ((reader.read(buffer)) != 0){
+                        String readLine = new String(buffer, "GBK");
+                        publishProgress(readLine);
+                        socket.close();
+                        socket = null;
+
+                        System.out.println("22222222222");
+                        break;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("444444444");
+                return null;
+            }
+            protected void onProgressUpdate(String... values) {
+                //回调到主线程更新对方位置
+                super.onProgressUpdate(values);
+                if(callBack != null){
+                    callBack.getCallBack(values[0]);
+                }
+                System.out.println("read line:" + values[0]);
+            }
+        };
+        read.execute();
+    }
+    //数据发送方法
+    private void dataSend(String command){
+        //将数据发送到服务器
+        try {
+            if (writer!=null) {
+                writer.write(command.getBytes("GBK"));
+                writer.flush();
+                System.out.println("1111发送的数据：" + command);
+            }
+            System.out.println("发送的数据："+command);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(e);
+        }
     }
 
 }

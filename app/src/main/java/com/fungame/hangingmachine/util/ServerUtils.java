@@ -3,6 +3,7 @@ package com.fungame.hangingmachine.util;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -27,8 +28,10 @@ import java.nio.channels.SocketChannel;
  */
 public class ServerUtils {
 
-    private static SocketCallBack callBack;
+    private static final int EXIST = 20;
     private boolean hasReceive = false;
+    private static SocketCallBack callBack;
+    private static final int CALL_BACK = 100;
 
     public interface SocketCallBack{
         public void getCallBack(String back);
@@ -38,11 +41,14 @@ public class ServerUtils {
         @Override
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
-            if(msg.what == 100){
-                SocketCallBack callBack = (SocketCallBack) msg.obj;
+            if(msg.what == CALL_BACK){
                 String result = (String) msg.obj;
                 if (callBack != null) {
                     callBack.getCallBack(result);
+                }
+            } else if(msg.what == EXIST){
+                if (callBack != null) {
+                    callBack.getCallBack("exit");
                 }
             }
         }
@@ -63,19 +69,7 @@ public class ServerUtils {
     // 转化十六进制编码为字符串
     public static String toStringHex(byte[] baKeyword)
     {
-//        byte[] baKeyword = new byte[s.length()/2];
         String s = "";
-//        for(int i = 0; i < baKeyword.length; i++)
-//        {
-//            try
-//            {
-//                baKeyword[i] = (byte)(0xff & Integer.parseInt(s.substring(i*2, i*2+2),16));
-//            }
-//            catch(Exception e)
-//            {
-//                e.printStackTrace();
-//            }
-//        }
         try
         {
             s = new String(baKeyword, "utf-8");//UTF-16le:Not
@@ -89,118 +83,73 @@ public class ServerUtils {
 
     public void sendCommand(final String str, final SocketCallBack cb) {
 
-            callBack = cb;
-//            new Thread(){
-//                @Override
-//                public void run() {
-//                        try {
-//                            //建立Socket
-////                            Socket s = new Socket("58.221.58.190", 347);
-////                            Socket s = new Socket("192.168.1.24", 1000);
-//                            int TIME_OUT = 30000;
-//                            SocketChannel client = SocketChannel.open();
-////                            InetSocketAddress isa = new InetSocketAddress("58.221.58.190", 347);
-//
-//                            Socket socket = new Socket();
-//                            SocketAddress address = new InetSocketAddress("58.221.58.190", 347);
-//                            socket.connect(address, TIME_OUT);
-//                            socket.setSoTimeout(TIME_OUT);
-//                            BufferedReader in = new BufferedReader(new InputStreamReader(
-//                                    socket.getInputStream()));
-//
-//                            PrintWriter out = new PrintWriter(new BufferedWriter(
-//                                    new OutputStreamWriter(socket.getOutputStream())), true);
-//
-//                            System.out.println("ready to write:" + str);
-//                            out.println(str.getBytes("UTF-8"));
-////                            out.write(str);
-//                            out.flush();
-//                            while (true) {
-//                                try {
-//                                    if (!socket.isClosed() && socket.isConnected()
-//                                            && !socket.isInputShutdown()) {
-////                                        byte[] lenBuffer = new byte[1024];
-////                                        int len = 0;
-//                                        try {
-//                                            String tmp = in.readLine();
-//                                            System.out.println("read line lenth:" + tmp);
-//                                        } catch (Exception e) {
-//                                            System.out.println("1111 SocketSvr socket read timeout");
-//                                        }
-//                                    }
-//                                } catch (Exception ex) {
-//                                    ex.printStackTrace();
-//                                }
-//                            }
-//
-////                            brNet.close();
-////                            s.close();
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                }
-//            }.start();
-
-
+        callBack = cb;
         onCreate(str, callBack);
 
-
-
-//        new Thread(){
-//            @Override
-//            public void run() {
-//                super.run();
-//
-//                Socket sock = null;
-//                try {
-//                    sock = new Socket("58.221.58.99", 347);
-//                    InputStream inputStream = sock.getInputStream();
-//                    byte[] inBuffer = new byte[1024];
-//                    // 登陆获取公告
-//                    StringBuilder builder = new StringBuilder();
-//                    while (true) {
-//                        int reads = inputStream.read(inBuffer);
-//                        String tmp = new String(inBuffer);
-//                        builder.append(tmp);
-//                        if(reads  > 0){
-//                            Message msg = handler.obtainMessage();
-//                            msg.obj = builder.toString();
-//                            msg.what = 100;
-//                            Log.i("--tom", "get result:" + builder.toString());
-//                            handler.sendMessage(msg);
-//                            break;
-//                        }
-//                    }
-//                } catch (Exception ex) {
-//                    ex.printStackTrace();
-//                }
-//
-//            }
-//        }.start();
     }
 
-    InputStream reader;
-    OutputStream writer;
-    Socket socket;
-
+    private static InputStream reader;
+    private static OutputStream writer;
+    private static Socket socket;
 
     public void onCreate(final String command, final SocketCallBack callBack) {
         new Thread(new Runnable() {
             public void run() {
                 try {
+
+                    System.out.println("command:" + command);
+
+                    // 如果是close命令，就表示要关闭socket连接
+                    if("close".equals(command)){
+                        if(socket != null) {
+                            if (reader != null) {
+                                reader.close();
+                                reader = null;
+                            }
+                            if (writer != null) {
+                                writer.close();
+                                writer = null;
+                            }
+                            socket.close();
+                            socket = null;
+                            System.out.println("close -- ");
+                        }
+                        if(callBack != null){
+                            System.out.println("call back -- ");
+                            Message msg = handler.obtainMessage();
+                            msg.obj = command;
+                            msg.what = CALL_BACK;
+                            handler.sendMessage(msg);
+                        }
+                        return;
+                    }
                     //初始化socket
                     if(socket == null){
                         socket = new Socket("58.221.58.190", 347);
+                        System.out.println("socket is null, new socket -- ");
                     }
 //                    writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 //                    reader=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    reader = socket.getInputStream();
-                    writer = socket.getOutputStream();
+                    if(reader == null) {
+                        reader = socket.getInputStream();
+                        System.out.println("reader is null , get input stream -- ");
+                    }
+
+                    if(writer == null) {
+                        writer = socket.getOutputStream();
+                        System.out.println("write is null , get writer stream -- ");
+                    }
+
                     System.out.println("成功连接服务器！");
                     dataSend(command);
                     if(!hasReceive){
-                        dataReceived();
-                    }
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                dataReceived();
+                            }
+                        });
+                    };
                 } catch (IOException e) {
                     System.out.println(e);
                     e.printStackTrace();
@@ -216,15 +165,22 @@ public class ServerUtils {
                 try {
                     hasReceive = true;
                     byte[]  buffer = new byte[1024];
-                    while ((reader.read(buffer)) != 0){
-                        String readLine = new String(buffer, "GBK");
-                        publishProgress(readLine);
-                        socket.close();
-                        socket = null;
+//                    BufferedReader br = new BufferedReader(new InputStreamReader(reader,"GBK"));
 
-                        System.out.println("22222222222");
-                        break;
+                    String readLine = "";
+                    System.out.println("233333333");
+                    int len = 0;
+//                    StringBuffer buffer = new StringBuffer();
+                    while (reader != null && (len = reader.read(buffer)) > 0){
+                        String bufStr = new String(buffer, 0, len, "GBK");
+//                        buffer.append(readLine);
+                        publishProgress(bufStr);
+                        System.out.println("233333333");
                     }
+//                    String bufStr = buffer.toString();
+//                    if(!TextUtils.isEmpty(buffer.toString())) {
+//                        publishProgress(bufStr);
+//                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -255,6 +211,7 @@ public class ServerUtils {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println(e);
+            handler.sendEmptyMessage(EXIST);
         }
     }
 

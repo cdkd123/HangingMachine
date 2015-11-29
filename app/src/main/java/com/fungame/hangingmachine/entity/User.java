@@ -1,32 +1,27 @@
 package com.fungame.hangingmachine.entity;
 
+import android.content.SharedPreferences;
+
 /**
  * Created by tom on 2015/11/13.
  * descripton :
  */
 public class User {
-    String accountName;  // 账户名称
-    AccountType acoutType;   // 账户类型
+    String userName;  // 账户名称
     String accountMoney; // 账户余额
     String salarySpeed;  // 获取佣金速度
-    String accountLevel; // 账户级别
     long todayWorkTime; // 今日推广时间(s)
+    private String publishAds;
+    private AccountType accountType;
+    private String userLevel;
+    private String todayNums;
 
-    public User(){
-        this.accountName = "张三";
-        this.acoutType = AccountType.TestType;
-        this.accountMoney = "0.0";
-        this.salarySpeed = "0.5元/每小时";
-        this.accountLevel = "1.5";
-        this.todayWorkTime = 1500000;
+    public String getUserName() {
+        return userName;
     }
 
-    public String getAccountName() {
-        return accountName;
-    }
-
-    public String getAccountLevel() {
-        return accountLevel;
+    public String getUserLevel() {
+        return this.userLevel;
     }
 
     public String getAccountMoney() {
@@ -34,14 +29,31 @@ public class User {
     }
 
     public String getSalarySpeed() {
-        return salarySpeed;
+        return this.userLevel;
     }
 
     public String getAcountType() {
-        return acoutType.getName();
+        return accountType.getName();
     }
 
-    public String getTodayTime() {
-        return todayWorkTime + "";
+    public String getTodayNum() {
+        return todayNums + "";
+    }
+
+    public void initDataFromPreference(SharedPreferences pref) {
+        this.publishAds = pref.getString(Const.PUBLIC_ADS, "");
+        this.userName = pref.getString(Const.LOGIN_USER, "");
+        String acType = pref.getString(Const.ACCOUNT_TYPE, "");
+        this.accountType = AccountType.TestType;
+        if(acType.equals(AccountType.NormalType.getName())) {
+            accountType = AccountType.NormalType;
+        }
+        this.userLevel = pref.getString(Const.ACCOUNT_LEVEL, "");
+        this.todayNums = pref.getString(Const.TODAY_PUSH_NUMS, "");
+        this.accountMoney = pref.getString(Const.ACCOUNT_MONEY, "");
+    }
+
+    public String getPublicAds() {
+        return this.publishAds;
     }
 }

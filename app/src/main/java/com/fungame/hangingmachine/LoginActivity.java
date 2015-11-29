@@ -54,12 +54,6 @@ public class LoginActivity extends BaseActivity {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        // 如果没登陆，退出程序
-    }
-
 
     @Override
     public void initParams() {
@@ -111,12 +105,11 @@ public class LoginActivity extends BaseActivity {
         util.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override
             public void getCallBack(String back) {
-//                return ;
 
                 if (!TextUtils.isEmpty(back) && back.contains("YES") ){
-                    saveInfo(Const.LOGIN_INFO, back);
-                    saveInfo(Const.LOGIN_USER, user);
-                    TostHelper.shortToast(getBaseContext(), "登录成功");
+                    // 获取开头的登录信息
+                    processLoginInfo(back, user);
+                    startMainAndFinish();
                 } else {
                     TostHelper.shortToast(getBaseContext(), back);
                 }
@@ -124,6 +117,27 @@ public class LoginActivity extends BaseActivity {
         });
 
 //        saveLoginInfoAndJump();
+    }
+
+    public  void processLoginInfo(String back, String user) {
+        int firstSpace = back.indexOf(" ");
+
+        String loginInfo = back.substring(0, firstSpace);
+        String publicAds = back.substring(firstSpace);
+        String[] loginInfos = loginInfo.split("\\|");
+
+        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
+        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
+        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
+        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
+        saveInfo(Const.LOGIN_USER, user);
+        saveInfo(Const.PUBLIC_ADS, publicAds);
+    }
+
+    private void startMainAndFinish() {
+        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+        TostHelper.shortToast(getBaseContext(), "登录成功");
+        finish();
     }
 
     private void register() {
@@ -143,20 +157,13 @@ public class LoginActivity extends BaseActivity {
         util.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override
             public void getCallBack(String back) {
-//                return ;
                 TostHelper.shortToast(getBaseContext(), back);
                 login();
             }
         });
-//        saveLoginInfoAndJump();
     }
 
-    private void saveInfo(String key, String value) {
-        getPreferenct().edit().putString(key, value).commit();
-        // 转主界面
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
-    }
+
 
     private void saveLoginInfoAndJump() {
         String loginInfo = AssetUtils.getDataFromAssets(this, "login_success.txt");

@@ -3,6 +3,7 @@ package com.fungame.hangingmachine.fragment;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +58,6 @@ public class NavMoneyFragment extends BaseFragment {
         btnGetMoney = (Button)view.findViewById(R.id.btnGetMoney);
         btnRecharge = (Button)view.findViewById(R.id.btnRecharge);
 
-
     }
 
 
@@ -76,7 +76,7 @@ public class NavMoneyFragment extends BaseFragment {
 
     // 提现
     private void getMoney() {
-        TostHelper.shortToast(getActivity(), "提现");
+
         String 支付宝帐号 = etAccount.getText().toString();
         String 支付宝姓名 = etName.getText().toString();
         String 邮箱 = etEmail.getText().toString();
@@ -85,12 +85,19 @@ public class NavMoneyFragment extends BaseFragment {
         String QQ号码 = etQQ.getText().toString();
         String command =
                 "提现|" + 支付宝帐号 + "|" + 支付宝姓名 + "|"  + 邮箱 + "|" + 金额 + "|" + 手续费 + "|" + QQ号码;
-
+        utils.sendCommand(command, new ServerUtils.SocketCallBack() {
+            @Override
+            public void getCallBack(String back) {
+                //  tip
+                if(!TextUtils.isEmpty(back)){
+                    TostHelper.shortToast(getActivity(), back);
+                }
+            }
+        });
     }
 
     private void rechange() {
         showTipDialog("请充值转账给guajicz@126.com\n付款说明填写自己的挂机账号");
-
     }
 
     @Override

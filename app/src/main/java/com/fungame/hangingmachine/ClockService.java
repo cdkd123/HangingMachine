@@ -21,9 +21,16 @@ public class ClockService extends Service {
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-
         startTick();
         return new ServiceBinder();
+    }
+
+    public boolean isStart() {
+        return start;
+    }
+
+    public void stopClock() {
+        start = false;
     }
 
     //此方法是为了可以在Acitity中获得服务的实例
@@ -32,7 +39,6 @@ public class ClockService extends Service {
             return ClockService.this;
         }
     }
-
 
     private void startTick() {
         start = true;
@@ -66,9 +72,15 @@ public class ClockService extends Service {
     }
 
     @Override
+    public boolean onUnbind(Intent intent) {
+        start = false;
+        System.out.println("onUnbind!");
+        return super.onUnbind(intent);
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
-
         start = false;
     }
 

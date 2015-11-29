@@ -1,8 +1,13 @@
 package com.fungame.hangingmachine;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.provider.SyncStateContract;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -23,6 +28,7 @@ import com.fungame.hangingmachine.fragment.NavInfoFragment;
 import com.fungame.hangingmachine.fragment.NavMoneyFragment;
 import com.fungame.hangingmachine.fragment.OneClickFragment;
 import com.fungame.hangingmachine.fragment.UserManagerFragment;
+import com.fungame.hangingmachine.util.ServerUtils;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,6 +38,9 @@ public class MainActivity extends BaseActivity
     private Fragment fragment;
     private View headMainView;
     private TextView tvName;
+
+    private ClockService clockService;
+    private boolean hasBind = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,12 +53,7 @@ public class MainActivity extends BaseActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
             super.onBackPressed();
-        }
     }
 
     @Override
@@ -68,14 +72,33 @@ public class MainActivity extends BaseActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            startActivity(new Intent(this, LoginActivity.class));
-            getPreferenct().edit().putString(Const.LOGIN_INFO, "").commit();
-            getPreferenct().edit().putString(Const.LOGIN_USER, "").commit();
-            finish();
+            ServerUtils serverUtils = new ServerUtils();
+            serverUtils.sendCommand("close", new ServerUtils.SocketCallBack() {
+                @Override
+                public void getCallBack(String back) {
+                    clearUserData();
+                    if(clockService != null){
+                        clockService.stopClock();
+                    }
+                    MainActivity.this.finish();
+                }
+            });
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void clearUserData() {
+
+        getPreferenct().edit().putString(Const.ACCOUNT_TYPE, "").commit();
+        getPreferenct().edit().putString(Const.ACCOUNT_MONEY, "").commit();
+        getPreferenct().edit().putString(Const.ACCOUNT_LEVEL, "").commit();
+        getPreferenct().edit().putString(Const.TODAY_PUSH_NUMS, "").commit();
+        getPreferenct().edit().putString(Const.LOGIN_USER, "").commit();
+        getPreferenct().edit().putString(Const.PUBLIC_ADS, "").commit();
+        startActivity(new Intent(this, LoginActivity.class));
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -150,6 +173,53 @@ public class MainActivity extends BaseActivity
         });
     }
 
+    private ServiceConnection connection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            clockService = ((ClockService.ServiceBinder)(service)).getService();
+            System.out.println("tom, connection!");
+            if(clockService != null){
+                System.out.println("tom, 222!");
+                mHandler.sendEmptyMessage(BIND_SUCCESS);
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            clockService = null;
+            System.out.println("--server disconnect");
+
+        }
+    };
+
+    private int BIND_SUCCESS = 200;
+    Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            if(msg.what == BIND_SUCCESS){
+                if(binderListener != null){
+                    binderListener.onResult(clockService);
+                }
+            }
+        }
+    };
+
+    private void startGuaji(String back) {
+
+
+        Intent i = new Intent(this, ClockService.class);
+        hasBind = bindService(i, connection, Context.BIND_AUTO_CREATE);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        unbindClockService();
+        super.onDestroy();
+    }
+
     public Fragment getFragment(int id) {
         Fragment infoFragment = null;
         if(id == R.id.nav_info) {
@@ -167,5 +237,31 @@ public class MainActivity extends BaseActivity
             infoFragment.setArguments(bundle);
         }
         return infoFragment;
+    }
+
+    public ClockService getClockService() {
+        return clockService;
+    }
+
+    public void unbindClockService() {
+        if(hasBind){
+            System.out.println("has bind-->" + hasBind);
+            unbindService(connection);
+            hasBind = false;
+        }
+    }
+
+    public void bindClockService(BindResult result) {
+        this.binderListener = result;
+        if(!hasBind) {
+            Intent i = new Intent(this, ClockService.class);
+            bindService(i, connection, Context.BIND_AUTO_CREATE);
+        }
+    }
+
+    BindResult binderListener;
+
+    public interface BindResult{
+        public void onResult(ClockService service);
     }
 }

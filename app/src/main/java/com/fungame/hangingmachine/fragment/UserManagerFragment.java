@@ -16,6 +16,7 @@ import com.fungame.hangingmachine.entity.UserItem;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
 
+import org.json.JSONArray;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
@@ -35,6 +36,8 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
     private Button btnGetUser;
     private Button btnOpenAuth;
     private ServerUtils utils;
+    DataAdapter mAdapter;
+    final List<MyOpenUser> list = new ArrayList<MyOpenUser>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -69,9 +72,8 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
         btnOpen.setOnClickListener(this);
         btnGetUser.setOnClickListener(this);
         btnOpenAuth.setOnClickListener(this);
-        List<UserItem> list = new ArrayList<UserItem>();
-        list.add(new UserItem("test", "testButton"));
-        DataAdapter mAdapter = new DataAdapter(getActivity(), list);
+        list.add(new MyOpenUser("0", "test", "test", "2", "true"));
+        mAdapter = new DataAdapter(getActivity(), list);
         listView.setAdapter(mAdapter);
     }
 
@@ -123,11 +125,28 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
 //        String user = etOpenAccount.getText().toString();
 //        String pwd = etOpenPwd.getText().toString();
         String command = "获取下线|11";
+
         utils.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override
             public void getCallBack(String back) {
                 if(!TextUtils.isEmpty(back)) {
                     TostHelper.shortToast(getActivity(), back);
+                    // support a json string
+//                    try {
+//                        JSONArray json = new JSONArray(back);
+//                        list.clear();
+//                        for(int i = 0; i < json.length(); i++){
+//                            MyOpenUser user = new MyOpenUser("id", "accountName", "type", "level", "tuigua");
+//                            list.add(user);
+//                        }
+//                        if(list.size() > 0){
+//                            mAdapter.addAll(list);
+//                            mAdapter.notifyDataSetChanged();
+//                        }
+//                    } catch (Exception ex){
+//
+//                    }
+
                 }
             }
         });

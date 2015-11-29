@@ -25,4 +25,8 @@ public abstract class BaseFragment extends Fragment {
         pref = context.getSharedPreferences(Const.SHARE_PRE_NAME, Context.MODE_PRIVATE);
         return pref;
     }
+
+    protected void saveInfo(String key, String value) {
+        pref.edit().putString(key, value).commit();
+    }
 }

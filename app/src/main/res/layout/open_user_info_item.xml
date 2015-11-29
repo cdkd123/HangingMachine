@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/dp_8"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/tvLabel1"
+        style="@style/openUserInfo"
+        android:text="用户名：hello,world"/>
+
+    <TextView
+        android:id="@+id/tvLabel2"
+        style="@style/openUserInfo"
+        android:text="点我看看"/>
+
+    <TextView
+        android:id="@+id/tvLabel3"
+        style="@style/openUserInfo"
+        android:text="用户名：hello,world" />
+
+    <TextView
+        android:id="@+id/tvLabel4"
+        style="@style/openUserInfo"
+        android:text="点我看看"/>
+
+    <TextView
+        android:id="@+id/tvLabel5"
+        style="@style/openUserInfo"
+        android:text="用户名：hello,world" />
+
+
+
+</LinearLayout>

@@ -1,7 +1,10 @@
 package com.fungame.hangingmachine;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -28,11 +31,14 @@ import com.fungame.hangingmachine.fragment.NavInfoFragment;
 import com.fungame.hangingmachine.fragment.NavMoneyFragment;
 import com.fungame.hangingmachine.fragment.OneClickFragment;
 import com.fungame.hangingmachine.fragment.UserManagerFragment;
+import com.fungame.hangingmachine.util.NetworkUtils;
 import com.fungame.hangingmachine.util.ServerUtils;
+import com.fungame.hangingmachine.util.TostHelper;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final int STOP_GUAJI = 201;
     private FragmentManager mfManger;
     private FrameLayout flContainer;
     private Fragment fragment;
@@ -41,6 +47,9 @@ public class MainActivity extends BaseActivity
 
     private ClockService clockService;
     private boolean hasBind = false;
+    private int BIND_SUCCESS = 200;
+    private int CHECK_NETWORK = 201;
+    public static final int CHECK_NETWORK_TIME = 5000;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -158,6 +167,7 @@ public class MainActivity extends BaseActivity
         tvName = (TextView)headMainView.findViewById(R.id.tvName);
         String userName = getPreferenct().getString(Const.LOGIN_USER, "");
         tvName.setText(userName);
+        mHandler.sendEmptyMessageDelayed(CHECK_NETWORK, CHECK_NETWORK_TIME);
     }
 
     @Override
@@ -193,7 +203,6 @@ public class MainActivity extends BaseActivity
         }
     };
 
-    private int BIND_SUCCESS = 200;
     Handler mHandler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -202,9 +211,47 @@ public class MainActivity extends BaseActivity
                 if(binderListener != null){
                     binderListener.onResult(clockService);
                 }
+            } else if(msg.what == CHECK_NETWORK){
+                checkNetwork();
+            } else if(msg.what == STOP_GUAJI){
+                stopGuaji();
             }
         }
     };
+
+    private void stopGuaji() {
+        if(getClockService() != null){
+            getClockService().stopClock();
+            setClockServiceStop();
+            System.out.println("stop guaiji!");
+        }
+    }
+
+    Dialog dialg;
+    private void checkNetwork() {
+        System.out.println("tom-->check network!");
+        if(!NetworkUtils.getNetworkEnable(getBaseContext())){
+            TostHelper.shortToast(MainActivity.this, getString(R.string.network_not_work));
+            mHandler.sendEmptyMessage(STOP_GUAJI);
+            dialg = new AlertDialog.Builder(MainActivity.this)
+                    .setMessage(R.string.network_not_work)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialg.dismiss();
+                            startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                            MainActivity.this.finish();
+
+                        }
+                    }).create();
+            dialg.show();
+            mHandler.removeMessages(CHECK_NETWORK);
+            return;
+        } else {
+            mHandler.sendEmptyMessageDelayed(CHECK_NETWORK, CHECK_NETWORK_TIME);
+        }
+    }
 
     private void startGuaji(String back) {
 
@@ -233,7 +280,7 @@ public class MainActivity extends BaseActivity
         } else if (id == R.id.nav_official_site){
             infoFragment = new HtmlFragment();
             Bundle bundle = new Bundle();
-            bundle.putString("data", "http://www.eguaji.cc/index.html");
+            bundle.putString("data", "http://www.gguaji.com/gw.txt");
             infoFragment.setArguments(bundle);
         }
         return infoFragment;
@@ -260,6 +307,14 @@ public class MainActivity extends BaseActivity
     }
 
     BindResult binderListener;
+
+    public void setClockServiceStop() {
+        hasBind = false;
+    }
+
+    public void startClock() {
+
+    }
 
     public interface BindResult{
         public void onResult(ClockService service);

@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:layout_gravity="center_vertical"
-            android:text="[正式开通版180元]"
+            android:text="[正式开通版188元]"
             android:id="@+id/btnOpenVersion" />
         </LinearLayout>
 

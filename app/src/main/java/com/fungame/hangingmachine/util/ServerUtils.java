@@ -32,6 +32,8 @@ public class ServerUtils {
     private boolean hasReceive = false;
     private static SocketCallBack callBack;
     private static final int CALL_BACK = 100;
+    public static final String IP_ADDRESS = "58.221.57.99";
+    public static final int PORT = 347;
 
     public interface SocketCallBack{
         public void getCallBack(String back);
@@ -101,19 +103,7 @@ public class ServerUtils {
 
                     // 如果是close命令，就表示要关闭socket连接
                     if("close".equals(command)){
-                        if(socket != null) {
-                            if (reader != null) {
-                                reader.close();
-                                reader = null;
-                            }
-                            if (writer != null) {
-                                writer.close();
-                                writer = null;
-                            }
-                            socket.close();
-                            socket = null;
-                            System.out.println("close -- ");
-                        }
+                        closeSocket();
                         if(callBack != null){
                             System.out.println("call back -- ");
                             Message msg = handler.obtainMessage();
@@ -125,7 +115,9 @@ public class ServerUtils {
                     }
                     //初始化socket
                     if(socket == null){
-                        socket = new Socket("58.221.58.190", 347);
+
+//                        socket = new Socket("58.221.58.190", 347);
+                        socket = new Socket(IP_ADDRESS, PORT);
                         System.out.println("socket is null, new socket -- ");
                     }
 //                    writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -157,6 +149,23 @@ public class ServerUtils {
             }
         }).start();
     }
+
+    private void closeSocket() throws IOException {
+        if(socket != null) {
+            if (reader != null) {
+                reader.close();
+                reader = null;
+            }
+            if (writer != null) {
+                writer.close();
+                writer = null;
+            }
+            socket.close();
+            socket = null;
+            System.out.println("close -- ");
+        }
+    }
+
     //接收到数据的处理方法
     private void dataReceived(){
         final AsyncTask<Void,String,Void> read=new AsyncTask<Void, String, Void>() {
@@ -177,12 +186,15 @@ public class ServerUtils {
                         publishProgress(bufStr);
                         System.out.println("233333333");
                     }
-//                    String bufStr = buffer.toString();
-//                    if(!TextUtils.isEmpty(buffer.toString())) {
-//                        publishProgress(bufStr);
-//                    }
                 } catch (IOException e) {
                     e.printStackTrace();
+                    try {
+                        closeSocket();
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    publishProgress("exception");
+//
                 }
                 System.out.println("444444444");
                 return null;

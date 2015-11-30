@@ -4,9 +4,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewStructure;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fungame.hangingmachine.R;
 import com.fungame.hangingmachine.util.TostHelper;
@@ -20,14 +22,21 @@ public class InputDialog extends Dialog {
 
     private EditText etText1, etText2;
     private InputDialogInterface confirmListener;
-    private TextView text2;
 
     public void setConfirmListener(InputDialogInterface confirmListener) {
         this.confirmListener = confirmListener;
     }
 
-    public TextView getText2() {
+    public EditText getText2() {
         return etText2;
+    }
+
+    public EditText getText1() {
+        return etText1;
+    }
+
+    public TextView getConfirm() {
+        return btnModify;
     }
 
     public interface InputDialogInterface {
@@ -36,7 +45,7 @@ public class InputDialog extends Dialog {
     }
 
     InputDialogInterface dlgClickListener;
-
+    Button btnModify;
 
     public InputDialog(Context context) {
         super(context);
@@ -45,7 +54,7 @@ public class InputDialog extends Dialog {
 
         etText1 = (EditText) findViewById(R.id.etUser);
         etText2 = (EditText) findViewById(R.id.etPwd);
-        Button btnModify = (Button)findViewById(R.id.btnModify);
+        btnModify = (Button)findViewById(R.id.btnModify);
         btnModify.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

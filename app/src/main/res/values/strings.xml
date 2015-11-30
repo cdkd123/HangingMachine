@@ -24,4 +24,8 @@
     <string name="increase_level">提升等级</string>
     <string name="start_ads">开始推广</string>
     <string name="pause_ads">取消推广</string>
+    <string name="start_push">开始推广</string>
+    <string name="has_open_guaji">已经开通挂满资格</string>
+    <string name="has_open_jiaman2">已经一键加满</string>
+    <string name="network_not_work">网络连接不可用</string>
 </resources>

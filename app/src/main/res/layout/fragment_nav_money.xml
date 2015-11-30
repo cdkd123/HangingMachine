@@ -55,7 +55,7 @@
                 android:id="@+id/tvMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="扣除手续费实际到账金额："/>
+                android:text="实际到账金额会扣除10%手续费"/>
 
             <Button
                 android:id="@+id/btnGetMoney"

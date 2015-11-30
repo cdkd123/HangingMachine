@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.fungame.hangingmachine.R;
+import com.fungame.hangingmachine.entity.Const;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
 
@@ -51,31 +52,50 @@ public class OneClickFragment extends BaseFragment {
 
             @Override
             public void onClick(View v) {
-                // 一键挂机
-                String command = "开通挂满资格|0";
-                utils.sendCommand(command, new ServerUtils.SocketCallBack() {
-                    @Override
-                    public void getCallBack(String back) {
-                        if(!TextUtils.isEmpty(back)) {
-                            TostHelper.shortToast(getActivity(), back);
+
+                String guajiAuth = getPreferenct(v.getContext()).getString(Const.LOGIN_USER + "guajiauth",
+                        "");
+                if(!"true".equals(guajiAuth)){
+                    // 一键挂机
+                    String command = "开通挂满资格|0";
+                    utils.sendCommand(command, new ServerUtils.SocketCallBack() {
+                        @Override
+                        public void getCallBack(String back) {
+                            if(!TextUtils.isEmpty(back)) {
+                                TostHelper.shortToast(getActivity(), back);
+                                saveInfo(Const.LOGIN_USER + "guajiauth", "true");
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    TostHelper.shortToast(getActivity(), v.getContext().getString(R.string.has_open_guaji));
+                }
+
             }
         });
         btnFull.setOnClickListener(new View.OnClickListener(){
 
             @Override
             public void onClick(View v) {
-                String command = "加满时间|0";
-                utils.sendCommand(command, new ServerUtils.SocketCallBack() {
-                    @Override
-                    public void getCallBack(String back) {
-                        if (!TextUtils.isEmpty(back)) {
-                            TostHelper.shortToast(getActivity(), back);
+
+                String jiamanAuth = getPreferenct(v.getContext()).getString(Const.LOGIN_USER + "jiamanAuth",
+                    "");
+                if(!"true".equals(jiamanAuth)){
+                    String command = "加满时间|0";
+                    utils.sendCommand(command, new ServerUtils.SocketCallBack() {
+                        @Override
+                        public void getCallBack(String back) {
+                            if (!TextUtils.isEmpty(back)) {
+                                saveInfo(Const.LOGIN_USER + "jiamanAuth", "true");
+                                TostHelper.shortToast(getActivity(), back);
+                            }
                         }
-                    }
-                });
+                    });
+                } else {
+                    TostHelper.shortToast(getActivity(), v.getContext().getString(R.string.has_open_jiaman2));
+                }
+
+
             }
         });
     }

@@ -12,6 +12,7 @@ public class Const {
     public static final String ACCOUNT_LEVEL = "account_level";
     public static final String TODAY_PUSH_NUMS = "today_push_nums";
     public static final String LOGIN_USER = "login_user";
+    public static final String LOGIN_PWD = "login_pwd";
 
     public static final String PUBLIC_ADS = "public_ads";
     public static final String START_PUSH = "start_push";

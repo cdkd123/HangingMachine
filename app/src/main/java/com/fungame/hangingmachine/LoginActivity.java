@@ -12,6 +12,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +22,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import com.fungame.hangingmachine.dialog.InputDialog;
 import com.fungame.hangingmachine.entity.Const;
 import com.fungame.hangingmachine.fragment.HtmlFragment;
 import com.fungame.hangingmachine.fragment.NavInfoFragment;
@@ -28,10 +30,13 @@ import com.fungame.hangingmachine.fragment.NavMoneyFragment;
 import com.fungame.hangingmachine.fragment.OneClickFragment;
 import com.fungame.hangingmachine.fragment.UserManagerFragment;
 import com.fungame.hangingmachine.util.AssetUtils;
+import com.fungame.hangingmachine.util.NetworkUtils;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
 
 import org.w3c.dom.Text;
+
+import java.math.BigDecimal;
 
 public class LoginActivity extends BaseActivity {
 
@@ -76,25 +81,49 @@ public class LoginActivity extends BaseActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                login();
+                final String user = etUser.getText().toString();
+                final String pwd = etPwd.getText().toString();
+                login(user, pwd);
             }
         });
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                register();
+
+                // not network
+                if (!NetworkUtils.getNetworkEnable(etUser.getContext())) {
+                    TostHelper.shortToast(getBaseContext(), "没有网络");
+                    return;
+                }
+
+                final InputDialog dialog = new InputDialog(view.getContext());
+                dialog.getText1().setHint("请输入用户名");
+                dialog.getText2().setHint("请输入密码");
+                dialog.getConfirm().setText("注册");
+                dialog.getText2().setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                dialog.setConfirmListener(new InputDialog.InputDialogInterface() {
+                    @Override
+                    public void onBtnClick(String et1, String et2) {
+                        register(et1, et2);
+                        dialog.dismiss();
+                    }
+                });
+                dialog.setTitle("提示");
+                dialog.show();
             }
         });
     }
 
-    private void login() {
-
-        final String user = etUser.getText().toString();
-        String pwd = etPwd.getText().toString();
-
+    private void login(final String user, final String pwd) {
         // 登陆
         if(TextUtils.isEmpty(user) || TextUtils.isEmpty(pwd)){
             TostHelper.shortToast(getBaseContext(), "用户名或密码为空");
+            return;
+        }
+
+        // not network
+        if(!NetworkUtils.getNetworkEnable(etUser.getContext())) {
+            TostHelper.shortToast(getBaseContext(), "没有网络");
             return;
         }
 
@@ -106,9 +135,9 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void getCallBack(String back) {
 
-                if (!TextUtils.isEmpty(back) && back.contains("YES") ){
+                if (!TextUtils.isEmpty(back) && back.contains("YES")) {
                     // 获取开头的登录信息
-                    processLoginInfo(back, user);
+                    processLoginInfo(back, user, pwd);
                     startMainAndFinish();
                 } else {
                     TostHelper.shortToast(getBaseContext(), back);
@@ -119,19 +148,27 @@ public class LoginActivity extends BaseActivity {
 //        saveLoginInfoAndJump();
     }
 
-    public  void processLoginInfo(String back, String user) {
+    public void processLoginInfo(String back, String user, String pwd) {
         int firstSpace = back.indexOf(" ");
 
-        String loginInfo = back.substring(0, firstSpace);
-        String publicAds = back.substring(firstSpace);
-        String[] loginInfos = loginInfo.split("\\|");
+//        String loginInfo = back.substring(0, firstSpace);
+//        String publicAds = back.substring(firstSpace);
+//        String[] loginInfos = loginInfo.split("\\|");
+//        int lastIndex = publicAds.indexOf("YES");
+//        publicAds = publicAds.substring(0, lastIndex - 2);
+        String[] loginInfos = back.split("\\|");
 
+        int todayNum = 0;
+        BigDecimal accountNum = new BigDecimal(loginInfos[2]);
+        todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
         saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
         saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
         saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
+        saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
+        saveInfo(Const.PUBLIC_ADS, loginInfos[5]);
         saveInfo(Const.LOGIN_USER, user);
-        saveInfo(Const.PUBLIC_ADS, publicAds);
+        saveInfo(Const.LOGIN_PWD, pwd);
+
     }
 
     private void startMainAndFinish() {
@@ -140,9 +177,7 @@ public class LoginActivity extends BaseActivity {
         finish();
     }
 
-    private void register() {
-        String user = etUser.getText().toString();
-        String pwd = etPwd.getText().toString();
+    private void register(final String user, final String pwd) {
 
         // 登陆
         if(TextUtils.isEmpty(user) || TextUtils.isEmpty(pwd)){
@@ -158,7 +193,7 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void getCallBack(String back) {
                 TostHelper.shortToast(getBaseContext(), back);
-                login();
+                login(user, pwd);
             }
         });
     }

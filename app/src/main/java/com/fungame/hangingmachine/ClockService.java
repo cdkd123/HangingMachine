@@ -33,6 +33,10 @@ public class ClockService extends Service {
         start = false;
     }
 
+    public void startClock() {
+        startTick();
+    }
+
     //此方法是为了可以在Acitity中获得服务的实例
     public class ServiceBinder extends Binder {
         public ClockService getService() {

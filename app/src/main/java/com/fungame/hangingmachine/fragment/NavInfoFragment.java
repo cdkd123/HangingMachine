@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fungame.hangingmachine.ClockService;
 import com.fungame.hangingmachine.MainActivity;
@@ -29,8 +30,11 @@ import com.fungame.hangingmachine.dialog.UIItemView;
 import com.fungame.hangingmachine.entity.Const;
 import com.fungame.hangingmachine.entity.User;
 import com.fungame.hangingmachine.entity.UserItem;
+import com.fungame.hangingmachine.util.NetworkUtils;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
+
+import org.w3c.dom.Text;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -38,6 +42,7 @@ import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by tom on 2015/11/13.
@@ -46,11 +51,13 @@ import java.util.List;
 public class NavInfoFragment extends BaseFragment {
 
     private static final int STOP_GUAJI = 200;
+    public static final int DELAY_MILLIS = 60 * 1000;
     private ServerUtils utils;
     private boolean start = false;
     private TextView tvMesage;
     private MainActivity mainActivity;
     private ClockService service;
+    private static final int RELOGIN = 201;
 
     @Override
     public void onAttach(Context context) {
@@ -77,6 +84,7 @@ public class NavInfoFragment extends BaseFragment {
     }
 
     UIItemView uiItemAds, uiItem1, uiItem2, uiItem3, uiItem4, uiItem5, uiItem6;
+
     @Override
     public void initView(View view) {
 
@@ -113,9 +121,8 @@ public class NavInfoFragment extends BaseFragment {
         }
 
         tvMesage = (TextView) view.findViewById(R.id.tvMessage);
+        mHandler.sendEmptyMessageDelayed(RELOGIN, DELAY_MILLIS);
 
-
-//        mAdapter.setBtnItemClickListener(this);
     }
 
     public void getItemView(final int position, UIItemView holder, UserItem meta) {
@@ -201,26 +208,31 @@ public class NavInfoFragment extends BaseFragment {
                 updateUserLevel();
                 break;
             case 5:
-                final TextView tvRight = (TextView) uiItem6.getView(R.id.btn);
-                String text = tvRight.getText().toString();
-                if("开始推广".equals(text)) {
-                    startMakeMoney();
-                } else {
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            tvRight.setText("开始推广");
-                        }
-                    }, 1000);
-
-                    stopMakeMoney();
-                }
+                pushClick();
                 break;
             default:
                 break;
         }
     }
 
+
+    // push button was click
+    private void pushClick() {
+        final TextView tvRight = (TextView) uiItem6.getView(R.id.btn);
+        String text = tvRight.getText().toString();
+        if(mainActivity.getString(R.string.start_push).equals(text)) {
+            startMakeMoney();
+        } else {
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    tvRight.setText(R.string.start_push);
+                }
+            }, 1000);
+
+            stopMakeMoney();
+        }
+    }
 
 
     /**
@@ -242,25 +254,37 @@ public class NavInfoFragment extends BaseFragment {
         startGuaji("");
     }
 
+    // read
     private void initResult() {
-        String todayNums = getPreferenct(getActivity()).getString(Const.TODAY_PUSH_NUMS, "0");
-        BigDecimal metaDecimal = basicAddMeta();
-        result = metaDecimal.multiply(new BigDecimal(todayNums)).doubleValue();
+        String todayNums = getPreferenct(getActivity()).getString(Const.TODAY_PUSH_NUMS, "1");
+        int tdNums = Integer.valueOf(todayNums);
+        if(tdNums > 0){
+            BigDecimal metaDecimal = basicAddMeta();
+            result = metaDecimal.multiply(new BigDecimal(todayNums)).doubleValue() + "";
+        } else {
+            result = "0";
+        }
+
     }
 
+    // start clockservice to start a new thread, and change text
     private void startGuaji(String s) {
+
         // 先绑定服务器
         if(mainActivity != null){
-            mainActivity.bindClockService(new MainActivity.BindResult() {
-                @Override
-                public void onResult(ClockService service) {
-                    service.setHandler(mHandler);
-                    TextView right = getRight(6);
-                    if(right != null){
-                        right.setText("取消推广");
+            if(mainActivity.getClockService() != null){
+                mHandler.sendEmptyMessageDelayed(RELOGIN, DELAY_MILLIS);
+                mainActivity.getClockService().startClock();
+            } else {
+                mainActivity.bindClockService(new MainActivity.BindResult() {
+                    @Override
+                    public void onResult(ClockService service) {
+                        mHandler.sendEmptyMessageDelayed(RELOGIN, DELAY_MILLIS);
+                        service.setHandler(mHandler);
                     }
-                }
-            });
+                });
+            }
+
         }
     }
 
@@ -296,7 +320,7 @@ public class NavInfoFragment extends BaseFragment {
         return left;
     }
 
-    double result = 0.0001;
+    String result = "0.0001";
 
     Handler mHandler = new Handler(){
         @Override
@@ -304,19 +328,99 @@ public class NavInfoFragment extends BaseFragment {
             super.handleMessage(msg);
             // 接收service发送过来的消息
             if(msg.what == 0){
-                if(getContext() != null){
-                    showLinkMessage();
-                }
+                showLinkMessage();
             } else if(msg.what == STOP_GUAJI){
                 stopGuaji();
+            } else if(msg.what == RELOGIN){
+                relogin();
             }
         }
     };
+
+
+    private void relogin() {
+
+        // 如果没有网络，发送消息停止挂机，也不用loginle
+        System.out.println("--tom: relogin");
+        if(getContext() == null){
+            return;
+        }
+        final String user = getPreferenct(getContext()).getString(Const.LOGIN_USER, "");
+        final String pwd = getPreferenct(getContext()).getString(Const.LOGIN_PWD, "");
+        if(TextUtils.isEmpty(user) || TextUtils.isEmpty(pwd)){
+            return;
+        }
+
+        String command = "登录" + "|" + user + "|" + pwd;
+        System.out.println("--tom: relogin command:" + command);
+
+        ServerUtils util = new ServerUtils();
+        util.sendCommand(command, new ServerUtils.SocketCallBack() {
+            @Override
+            public void getCallBack(String back) {
+
+                if (!TextUtils.isEmpty(back) && back.contains("YES")) {
+                    System.out.println("--tom: relogin info:" + back);
+                    // 获取开头的登录信息
+                    processLoginInfo(back, user, pwd);
+                } else {
+                    System.out.println("--tom: login info empty");
+                }
+                mHandler.sendEmptyMessageDelayed(RELOGIN,
+                        DELAY_MILLIS);
+            }
+        });
+    }
+
+
+
+    // 处理登录信息
+    public void processLoginInfo(String back, String user, String pwd) {
+//        int firstSpace = back.indexOf(" ");
+//
+//        String loginInfo = back.substring(0, firstSpace);
+//        String publicAds = back.substring(firstSpace);
+//        String[] loginInfos = loginInfo.split("\\|");
+//        int lastIndex = publicAds.indexOf("YES");
+//        publicAds = publicAds.substring(0, lastIndex - 2);
+//        // before YES is anouncment, after is
+//        if(TextUtils.isEmpty(loginInfos[1])) {
+//            System.out.println("login info back empty");
+//            return;
+//        }
+//        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
+//        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
+//        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
+//        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
+//        saveInfo(Const.LOGIN_USER, user);
+//        saveInfo(Const.LOGIN_PWD, pwd);
+//        saveInfo(Const.PUBLIC_ADS, publicAds);
+
+        String[] loginInfos = back.split("\\|");
+        try{
+            int todayNum = 0;
+            BigDecimal accountNum = new BigDecimal(loginInfos[2]);
+            todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
+            saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
+            saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
+            saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
+            saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
+            saveInfo(Const.PUBLIC_ADS, loginInfos[5]);
+            saveInfo(Const.LOGIN_USER, user);
+            saveInfo(Const.LOGIN_PWD, pwd);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+
+    }
 
     // 解除挂机服务
     private void stopGuaji() {
         if(mainActivity.getClockService() != null){
             mainActivity.getClockService().stopClock();
+            mainActivity.setClockServiceStop();
+            mHandler.removeMessages(RELOGIN);
             System.out.println("stop guaiji!");
         }
     }
@@ -340,7 +444,7 @@ public class NavInfoFragment extends BaseFragment {
             return;
         }
 
-        String todayNums = getPreferenct(getActivity()).getString(Const.TODAY_PUSH_NUMS, "0");
+        String todayNums = getPreferenct(getActivity()).getString(Const.TODAY_PUSH_NUMS, "1");
         if(TextUtils.isEmpty(todayNums)){
             // logout
             return;
@@ -352,8 +456,8 @@ public class NavInfoFragment extends BaseFragment {
         String time = format.format(mills);
         BigDecimal metaDecimal = basicAddMeta();
         if(metaDecimal != null){
-            BigDecimal preResult = new BigDecimal(result + "");
-            result = metaDecimal.add(preResult).doubleValue();
+            BigDecimal preResult = new BigDecimal(result);
+            result = preResult.add(metaDecimal).doubleValue() + "";
             System.out.println("result:" + result);
         }
 
@@ -367,7 +471,6 @@ public class NavInfoFragment extends BaseFragment {
                 // 取消按钮
                 TextView tvStart = (TextView) uiItem6.getView(R.id.btn);
                 tvStart.setText(R.string.pause_ads);
-
 
                 // 设置账户余额
 //                String num = getFormatNum();

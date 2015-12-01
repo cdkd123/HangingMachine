@@ -260,9 +260,9 @@ public class NavInfoFragment extends BaseFragment {
         int tdNums = Integer.valueOf(todayNums);
         if(tdNums > 0){
             BigDecimal metaDecimal = basicAddMeta();
-            result = metaDecimal.multiply(new BigDecimal(todayNums)).doubleValue() + "";
+            result = new BigDecimal(todayNums).multiply(metaDecimal);
         } else {
-            result = "0";
+            result = new BigDecimal("0");
         }
 
     }
@@ -320,7 +320,7 @@ public class NavInfoFragment extends BaseFragment {
         return left;
     }
 
-    String result = "0.0001";
+    BigDecimal result = new BigDecimal("0.0001");
 
     Handler mHandler = new Handler(){
         @Override
@@ -376,41 +376,38 @@ public class NavInfoFragment extends BaseFragment {
 
     // 处理登录信息
     public void processLoginInfo(String back, String user, String pwd) {
-//        int firstSpace = back.indexOf(" ");
-//
-//        String loginInfo = back.substring(0, firstSpace);
-//        String publicAds = back.substring(firstSpace);
-//        String[] loginInfos = loginInfo.split("\\|");
-//        int lastIndex = publicAds.indexOf("YES");
-//        publicAds = publicAds.substring(0, lastIndex - 2);
-//        // before YES is anouncment, after is
-//        if(TextUtils.isEmpty(loginInfos[1])) {
-//            System.out.println("login info back empty");
-//            return;
-//        }
-//        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
-//        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
-//        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-//        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
-//        saveInfo(Const.LOGIN_USER, user);
-//        saveInfo(Const.LOGIN_PWD, pwd);
-//        saveInfo(Const.PUBLIC_ADS, publicAds);
 
-        String[] loginInfos = back.split("\\|");
-        try{
-            int todayNum = 0;
-            BigDecimal accountNum = new BigDecimal(loginInfos[2]);
-            todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
-            saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
-            saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
-            saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-            saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
-            saveInfo(Const.PUBLIC_ADS, loginInfos[5]);
-            saveInfo(Const.LOGIN_USER, user);
-            saveInfo(Const.LOGIN_PWD, pwd);
-        }catch (Exception ex){
-            ex.printStackTrace();
-        }
+        int firstSpace = back.indexOf(" ");
+
+        String loginInfo = back.substring(0, firstSpace);
+        String publicAds = back.substring(firstSpace);
+        String[] loginInfos = loginInfo.split("\\|");
+        int lastIndex = publicAds.indexOf("YES");
+        publicAds = publicAds.substring(0, lastIndex - 2);
+
+        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
+        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
+        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
+        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
+        saveInfo(Const.PUBLIC_ADS, publicAds);
+        saveInfo(Const.LOGIN_USER, user);
+        saveInfo(Const.LOGIN_PWD, pwd);
+
+//        String[] loginInfos = back.split("\\|");
+//        try{
+//            int todayNum = 0;
+//            BigDecimal accountNum = new BigDecimal(loginInfos[2]);
+//            todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
+//            saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
+//            saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
+//            saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
+//            saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
+//            saveInfo(Const.PUBLIC_ADS, loginInfos[5]);
+//            saveInfo(Const.LOGIN_USER, user);
+//            saveInfo(Const.LOGIN_PWD, pwd);
+//        }catch (Exception ex){
+//            ex.printStackTrace();
+//        }
 
 
     }
@@ -455,12 +452,8 @@ public class NavInfoFragment extends BaseFragment {
         long mills = System.currentTimeMillis();
         String time = format.format(mills);
         BigDecimal metaDecimal = basicAddMeta();
-        if(metaDecimal != null){
-            BigDecimal preResult = new BigDecimal(result);
-            result = preResult.add(metaDecimal).doubleValue() + "";
-            System.out.println("result:" + result);
-        }
-
+        result = result.add(metaDecimal);
+        System.out.println("meta:" + metaDecimal + "result:" + result);
         // calc today push ads number
         int todayNum = Integer.valueOf(todayNums) + 1;
         saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");

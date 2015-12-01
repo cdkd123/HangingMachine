@@ -32,7 +32,7 @@ public class ServerUtils {
     private boolean hasReceive = false;
     private static SocketCallBack callBack;
     private static final int CALL_BACK = 100;
-    public static final String IP_ADDRESS = "58.221.57.99";
+    public static final String IP_ADDRESS = "58.221.58.99";
     public static final int PORT = 347;
 
     public interface SocketCallBack{

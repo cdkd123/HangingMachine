@@ -7,7 +7,7 @@ import android.widget.TextView;
 
 import com.fungame.hangingmachine.ClockService;
 import com.fungame.hangingmachine.R;
-import com.fungame.hangingmachine.fragment.MyOpenUser;
+import com.fungame.hangingmachine.entity.MyOpenUser;
 
 import java.util.List;
 
@@ -49,15 +49,22 @@ public class DataAdapter extends SimpleBaseAdapter<MyOpenUser> {
         final TextView tvLabel2 = holder.getView(R.id.tvLabel2);
         final TextView tvLabel3 = holder.getView(R.id.tvLabel3);
         final TextView tvLabel4 = holder.getView(R.id.tvLabel4);
-        final TextView tvLabel5 = holder.getView(R.id.tvLabel5);
-        String label = meta.getAccountName();
+        String label = meta.getUserName();
 
-        if("test".equals(meta.getAccountName())){
+        if("test".equals(meta.getUserName())){
             tvLabel1.setVisibility(View.INVISIBLE);
             tvLabel2.setVisibility(View.INVISIBLE);
             tvLabel3.setVisibility(View.INVISIBLE);
             tvLabel4.setVisibility(View.INVISIBLE);
-            tvLabel5.setVisibility(View.INVISIBLE);
+        } else {
+            tvLabel1.setVisibility(View.VISIBLE);
+            tvLabel2.setVisibility(View.VISIBLE);
+            tvLabel3.setVisibility(View.VISIBLE);
+            tvLabel4.setVisibility(View.VISIBLE);
+            tvLabel1.setText(meta.getUserName());
+            tvLabel2.setText(meta.getVersion());
+            tvLabel3.setText(meta.getLevel());
+            tvLabel4.setText(meta.getIsTuiguang());
         }
 
         return convertView;

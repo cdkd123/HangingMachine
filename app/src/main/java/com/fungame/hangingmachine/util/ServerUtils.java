@@ -21,6 +21,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by tom on 2015/11/19.
@@ -32,7 +33,7 @@ public class ServerUtils {
     private boolean hasReceive = false;
     private static SocketCallBack callBack;
     private static final int CALL_BACK = 100;
-    public static final String IP_ADDRESS = "58.221.58.99";
+    public static final String IP_ADDRESS = "58.221.57.99";
     public static final int PORT = 347;
 
     public interface SocketCallBack{
@@ -103,14 +104,12 @@ public class ServerUtils {
 
                     // 如果是close命令，就表示要关闭socket连接
                     if("close".equals(command)){
-                        closeSocket();
-                        if(callBack != null){
-                            System.out.println("call back -- ");
-                            Message msg = handler.obtainMessage();
-                            msg.obj = command;
-                            msg.what = CALL_BACK;
-                            handler.sendMessage(msg);
+                        try{
+                            closeSocket();
+                        } catch(Exception ex){
+                            ex.printStackTrace();
                         }
+
                         return;
                     }
                     //初始化socket
@@ -168,7 +167,7 @@ public class ServerUtils {
 
     //接收到数据的处理方法
     private void dataReceived(){
-        final AsyncTask<Void,String,Void> read=new AsyncTask<Void, String, Void>() {
+        final AsyncTask<Void,String,Void> read = new AsyncTask<Void, String, Void>() {
             protected Void doInBackground(Void... params) {
                 String line;
                 try {

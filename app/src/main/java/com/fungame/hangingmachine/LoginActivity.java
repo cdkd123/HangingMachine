@@ -30,6 +30,7 @@ import com.fungame.hangingmachine.fragment.NavMoneyFragment;
 import com.fungame.hangingmachine.fragment.OneClickFragment;
 import com.fungame.hangingmachine.fragment.UserManagerFragment;
 import com.fungame.hangingmachine.util.AssetUtils;
+import com.fungame.hangingmachine.util.LoginUtils;
 import com.fungame.hangingmachine.util.NetworkUtils;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
@@ -73,6 +74,14 @@ public class LoginActivity extends BaseActivity {
         etPwd = (EditText) findViewById(R.id.etPwd);
         btnLogin = (Button) findViewById(R.id.btnLogin);
         btnRegister = (Button) findViewById(R.id.btnRegister);
+        String user = getPreferenct().getString(Const.LOGIN_USER, "");
+        String pwd = getPreferenct().getString(Const.LOGIN_PWD, "");
+        if(!TextUtils.isEmpty(user)){
+            etUser.setText(user);
+        }
+        if(!TextUtils.isEmpty(pwd)){
+            etPwd.setText(pwd);
+        }
     }
 
     @Override
@@ -135,12 +144,17 @@ public class LoginActivity extends BaseActivity {
             @Override
             public void getCallBack(String back) {
 
-                if (!TextUtils.isEmpty(back) && back.contains("YES")) {
+                if (!TextUtils.isEmpty(back)) {
                     // 获取开头的登录信息
-                    processLoginInfo(back, user, pwd);
-                    startMainAndFinish();
+                    boolean logSuccess = LoginUtils.processLoginInfo(getBaseContext(), getPreferenct(), back, user, pwd);
+                    if(logSuccess){
+                        startMainAndFinish();
+                    } else {
+                        TostHelper.shortToast(getBaseContext(), getString(R.string.login_fail));
+                    }
+
                 } else {
-                    TostHelper.shortToast(getBaseContext(), back);
+                    TostHelper.shortToast(getBaseContext(), getString(R.string.login_fail));
                 }
             }
         });
@@ -148,27 +162,7 @@ public class LoginActivity extends BaseActivity {
 //        saveLoginInfoAndJump();
     }
 
-    public void processLoginInfo(String back, String user, String pwd) {
-        int firstSpace = back.indexOf(" ");
 
-        String loginInfo = back.substring(0, firstSpace);
-        String publicAds = back.substring(firstSpace);
-        String[] loginInfos = loginInfo.split("\\|");
-        int lastIndex = publicAds.indexOf("YES");
-        publicAds = publicAds.substring(0, lastIndex - 2);
-//
-//        int todayNum = 0;
-//        BigDecimal accountNum = new BigDecimal(loginInfos[2]);
-//        todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
-        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
-        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
-        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
-        saveInfo(Const.PUBLIC_ADS, publicAds);
-        saveInfo(Const.LOGIN_USER, user);
-        saveInfo(Const.LOGIN_PWD, pwd);
-
-    }
 
     private void startMainAndFinish() {
         startActivity(new Intent(LoginActivity.this, MainActivity.class));

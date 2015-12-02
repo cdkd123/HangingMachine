@@ -30,6 +30,7 @@ import com.fungame.hangingmachine.dialog.UIItemView;
 import com.fungame.hangingmachine.entity.Const;
 import com.fungame.hangingmachine.entity.User;
 import com.fungame.hangingmachine.entity.UserItem;
+import com.fungame.hangingmachine.util.LoginUtils;
 import com.fungame.hangingmachine.util.NetworkUtils;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
@@ -62,18 +63,21 @@ public class NavInfoFragment extends BaseFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+
         mainActivity = (MainActivity)context;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         // Inflate the layout for this fragment
         getPreferenct(getActivity());
         View rootView = inflater.inflate(R.layout.fragment_nav_info, container, false);
         initView(rootView);
         initParams();
         initListeners();
+
         Log.i("--tom", "this is nav info fragment");
         return rootView;
     }
@@ -85,19 +89,26 @@ public class NavInfoFragment extends BaseFragment {
 
     UIItemView uiItemAds, uiItem1, uiItem2, uiItem3, uiItem4, uiItem5, uiItem6;
 
+
     @Override
     public void initView(View view) {
 
-         uiItemAds = (UIItemView) view.findViewById(R.id.publishAds);
-         uiItem1 = (UIItemView) view.findViewById(R.id.uiItem1);
-         uiItem2 = (UIItemView) view.findViewById(R.id.uiItem2);
-         uiItem3 = (UIItemView) view.findViewById(R.id.uiItem3);
-         uiItem4 = (UIItemView) view.findViewById(R.id.uiItem4);
-         uiItem5 = (UIItemView) view.findViewById(R.id.uiItem5);
-         uiItem6 = (UIItemView) view.findViewById(R.id.uiItem6);
+        uiItemAds = (UIItemView) view.findViewById(R.id.publishAds);
+        uiItem1 = (UIItemView) view.findViewById(R.id.uiItem1);
+        uiItem2 = (UIItemView) view.findViewById(R.id.uiItem2);
+        uiItem3 = (UIItemView) view.findViewById(R.id.uiItem3);
+        uiItem4 = (UIItemView) view.findViewById(R.id.uiItem4);
+        uiItem5 = (UIItemView) view.findViewById(R.id.uiItem5);
+        uiItem6 = (UIItemView) view.findViewById(R.id.uiItem6);
 
+        initUserData();
+
+        tvMesage = (TextView) view.findViewById(R.id.tvMessage);
+    }
+
+    private void initUserData() {
         UIItemView[] uiItems = {uiItemAds, uiItem1, uiItem2, uiItem3,
-                  uiItem4, uiItem5, uiItem6};
+                uiItem4, uiItem5, uiItem6};
         User user = new User();
         user.initDataFromPreference(pref);
         List<UserItem> userItems = new ArrayList<UserItem>();
@@ -106,9 +117,20 @@ public class NavInfoFragment extends BaseFragment {
         userItems.add(new UserItem(user.getUserName(), getString(R.string.modify_pwd)));
         userItems.add(new UserItem(user.getAcountType(), getString(R.string.update_user_level)));
         userItems.add(new UserItem(user.getAccountMoney(), getString(R.string.account_fill_money)));
-        userItems.add(new UserItem(user.getSalarySpeed(), getString(R.string.increase_commision)));
+        String basicAdd = basicAddMeta().toString() + "/每小时";
+        userItems.add(new UserItem(basicAdd, getString(R.string.increase_commision)));
         userItems.add(new UserItem(user.getUserLevel(), getString(R.string.increase_level)));
-        userItems.add(new UserItem(user.getTodayNum(), getString(R.string.start_ads)));
+        try{
+            int todayNum = Integer.valueOf(user.getTodayNum());
+            String pushTime = getSecond2HMS(todayNum);
+            userItems.add(new UserItem(user.getTodayNum(), getString(R.string.start_ads)));
+        } catch (NumberFormatException ex){
+            ex.printStackTrace();
+            int todayNum = 0;
+            String pushTime = getSecond2HMS(todayNum);
+            userItems.add(new UserItem(user.getTodayNum(), getString(R.string.start_ads)));
+        }
+
 
         if(mainActivity != null && mainActivity.getClockService() != null){
             service = mainActivity.getClockService();
@@ -119,10 +141,6 @@ public class NavInfoFragment extends BaseFragment {
         for(int i = 0; i < userItems.size() ;i++){
             getItemView(i, uiItems[i], userItems.get(i));
         }
-
-        tvMesage = (TextView) view.findViewById(R.id.tvMessage);
-        mHandler.sendEmptyMessageDelayed(RELOGIN, DELAY_MILLIS);
-
     }
 
     public void getItemView(final int position, UIItemView holder, UserItem meta) {
@@ -131,7 +149,7 @@ public class NavInfoFragment extends BaseFragment {
         final Button btnClick = (Button) holder.getView(R.id.btn);
         String label = meta.getLabel();
         System.out.println("position:" + position + ":" + meta.getLabel() + ",");
-        if("公告".equals(label)){
+        if(position == 0){
             tvLabel.setText(meta.getBtn());
             btnClick.setVisibility(View.GONE);
         } else {
@@ -256,15 +274,11 @@ public class NavInfoFragment extends BaseFragment {
 
     // read
     private void initResult() {
-        String todayNums = getPreferenct(getActivity()).getString(Const.TODAY_PUSH_NUMS, "1");
-        int tdNums = Integer.valueOf(todayNums);
-        if(tdNums > 0){
-            BigDecimal metaDecimal = basicAddMeta();
-            result = new BigDecimal(todayNums).multiply(metaDecimal);
-        } else {
-            result = new BigDecimal("0");
-        }
-
+        String acountMoney = getPreferenct(getActivity()).getString(Const.ACCOUNT_MONEY, "0");
+//        int tdNums = Integer.valueOf(todayNums);
+//        if(tdNums > 0){
+//            BigDecimal metaDecimal = basicAddMeta();
+          result = new BigDecimal(acountMoney);
     }
 
     // start clockservice to start a new thread, and change text
@@ -359,10 +373,11 @@ public class NavInfoFragment extends BaseFragment {
             @Override
             public void getCallBack(String back) {
 
-                if (!TextUtils.isEmpty(back) && back.contains("YES")) {
+                if (!TextUtils.isEmpty(back)) {
                     System.out.println("--tom: relogin info:" + back);
                     // 获取开头的登录信息
-                    processLoginInfo(back, user, pwd);
+                    LoginUtils.processLoginInfo(getContext(), getPreferenct(getContext()), back, user, pwd);
+                    initUserData();
                 } else {
                     System.out.println("--tom: login info empty");
                 }
@@ -370,46 +385,6 @@ public class NavInfoFragment extends BaseFragment {
                         DELAY_MILLIS);
             }
         });
-    }
-
-
-
-    // 处理登录信息
-    public void processLoginInfo(String back, String user, String pwd) {
-
-        int firstSpace = back.indexOf(" ");
-
-        String loginInfo = back.substring(0, firstSpace);
-        String publicAds = back.substring(firstSpace);
-        String[] loginInfos = loginInfo.split("\\|");
-        int lastIndex = publicAds.indexOf("YES");
-        publicAds = publicAds.substring(0, lastIndex - 2);
-
-        saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
-        saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
-        saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-        saveInfo(Const.TODAY_PUSH_NUMS, loginInfos[4]);
-        saveInfo(Const.PUBLIC_ADS, publicAds);
-        saveInfo(Const.LOGIN_USER, user);
-        saveInfo(Const.LOGIN_PWD, pwd);
-
-//        String[] loginInfos = back.split("\\|");
-//        try{
-//            int todayNum = 0;
-//            BigDecimal accountNum = new BigDecimal(loginInfos[2]);
-//            todayNum = accountNum.multiply(new BigDecimal("10000")).intValue();
-//            saveInfo(Const.ACCOUNT_TYPE, loginInfos[1]);
-//            saveInfo(Const.ACCOUNT_MONEY, loginInfos[2]);
-//            saveInfo(Const.ACCOUNT_LEVEL, loginInfos[3]);
-//            saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
-//            saveInfo(Const.PUBLIC_ADS, loginInfos[5]);
-//            saveInfo(Const.LOGIN_USER, user);
-//            saveInfo(Const.LOGIN_PWD, pwd);
-//        }catch (Exception ex){
-//            ex.printStackTrace();
-//        }
-
-
     }
 
     // 解除挂机服务
@@ -425,7 +400,7 @@ public class NavInfoFragment extends BaseFragment {
     private BigDecimal basicAddMeta() {
         try{
             String sAccountLevel =  getPreferenct(getContext()).getString(Const.ACCOUNT_LEVEL, "1");
-            BigDecimal meta = new BigDecimal("0.0001");
+            BigDecimal meta = new BigDecimal("0.36");
             BigDecimal level = new BigDecimal(sAccountLevel);
             System.out.println("account level:" + sAccountLevel);
             return meta.multiply(level);
@@ -447,6 +422,7 @@ public class NavInfoFragment extends BaseFragment {
             return;
         }
 
+
         // calc current account money
         DateFormat format = new SimpleDateFormat("连接广告 yyyy年mm月dd日 hh时mm分ss秒\n连接广告成功");
         long mills = System.currentTimeMillis();
@@ -454,9 +430,9 @@ public class NavInfoFragment extends BaseFragment {
         BigDecimal metaDecimal = basicAddMeta();
         result = result.add(metaDecimal);
         System.out.println("meta:" + metaDecimal + "result:" + result);
-        // calc today push ads number
+//         calc today push ads number
         int todayNum = Integer.valueOf(todayNums) + 1;
-        saveInfo(Const.TODAY_PUSH_NUMS, todayNum + "");
+        LoginUtils.saveInfo(getPreferenct(getContext()), Const.TODAY_PUSH_NUMS, todayNum + "");
 
         try{
             if(uiItem1 != null){

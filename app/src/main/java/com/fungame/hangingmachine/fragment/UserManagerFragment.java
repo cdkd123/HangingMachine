@@ -13,6 +13,7 @@ import com.fungame.hangingmachine.R;
 import com.fungame.hangingmachine.adapter.DataAdapter;
 import com.fungame.hangingmachine.entity.User;
 import com.fungame.hangingmachine.entity.UserItem;
+import com.fungame.hangingmachine.entity.MyOpenUser;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
 
@@ -72,7 +73,7 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
         btnOpen.setOnClickListener(this);
         btnGetUser.setOnClickListener(this);
         btnOpenAuth.setOnClickListener(this);
-        list.add(new MyOpenUser("0", "test", "test", "2", "true"));
+        list.add(new MyOpenUser("test", "test", "test", "2"));
         mAdapter = new DataAdapter(getActivity(), list);
         listView.setAdapter(mAdapter);
     }
@@ -109,7 +110,7 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
             TostHelper.shortToast(getActivity(), "密码为空");
             return;
         }
-        String command = "开通|" + user + "|" + pwd + "|试用版" + "|28";
+        String command = "开通|" + user + "|" + pwd + "|正式版" + "|188";
         utils.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override
             public void getCallBack(String back) {
@@ -130,7 +131,25 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
             @Override
             public void getCallBack(String back) {
                 if(!TextUtils.isEmpty(back)) {
-                    TostHelper.shortToast(getActivity(), back);
+//                    TostHelper.shortToast(getActivity(), back);
+                    int firstLine = back.indexOf("|");
+                    String user = back.substring(firstLine + 1);
+                    String[] users = user.split("\r\n");
+                    if(users == null || user.length() == 0){
+                        return;
+                    }
+                    list.clear();
+                    for(String userStr : users){
+                        String[] oneUser = userStr.split("-");
+                        MyOpenUser userObj = new MyOpenUser(oneUser[0],
+                                oneUser[1], oneUser[2], oneUser[3]);
+                        list.add(userObj);
+                    }
+                    if(list.size() > 0){
+                        mAdapter.clearData();
+                        mAdapter.addAll(list);
+                        mAdapter.notifyDataSetChanged();
+                    }
                     // support a json string
 //                    try {
 //                        JSONArray json = new JSONArray(back);

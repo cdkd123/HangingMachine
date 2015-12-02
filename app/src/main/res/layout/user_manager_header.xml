@@ -71,9 +71,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/dp_8"
         android:orientation="horizontal" >
-        <TextView
-            style="@style/GridTabStyle"
-            android:text="序号"/>
 
         <TextView
             style="@style/GridTabStyle"

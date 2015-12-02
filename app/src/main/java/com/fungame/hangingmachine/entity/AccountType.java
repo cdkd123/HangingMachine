@@ -7,7 +7,7 @@ package com.fungame.hangingmachine.entity;
 public enum AccountType {
 
     NormalType("正式版"),
-    TestType("测试版");
+    FreeType("免费版");
 
     private String name;
 

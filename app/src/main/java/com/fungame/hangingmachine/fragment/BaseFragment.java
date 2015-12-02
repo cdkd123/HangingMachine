@@ -26,7 +26,5 @@ public abstract class BaseFragment extends Fragment {
         return pref;
     }
 
-    protected void saveInfo(String key, String value) {
-        pref.edit().putString(key, value).commit();
-    }
+
 }

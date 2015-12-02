@@ -15,6 +15,8 @@ import com.fungame.hangingmachine.R;
 import com.fungame.hangingmachine.util.ServerUtils;
 import com.fungame.hangingmachine.util.TostHelper;
 
+import java.math.BigDecimal;
+
 /**
  * Created by tom on 2015/11/13.
  * descripton :
@@ -77,14 +79,21 @@ public class NavMoneyFragment extends BaseFragment {
     // 提现
     private void getMoney() {
 
-        String 支付宝帐号 = etAccount.getText().toString();
-        String 支付宝姓名 = etName.getText().toString();
-        String 邮箱 = etEmail.getText().toString();
-        String 金额 = etGetMoney.getText().toString();
-        String 手续费 = "1";
+        String aliPayAccountName = etAccount.getText().toString();
+        String aliPayNickName = etName.getText().toString();
+        String email = etEmail.getText().toString();
+        String upMoney = etGetMoney.getText().toString();
         String QQ号码 = etQQ.getText().toString();
+        String sxf = "";
+
+        BigDecimal metaMoney = new BigDecimal(upMoney);
+        BigDecimal sxfMeta = new BigDecimal("0.1");
+        BigDecimal finalUpMoney = new BigDecimal("0.9");
+        sxf = metaMoney.multiply(sxfMeta).toString();
+        String finalMoney = metaMoney.multiply(finalUpMoney).toString();
         String command =
-                "提现|" + 支付宝帐号 + "|" + 支付宝姓名 + "|"  + 邮箱 + "|" + 金额 + "|" + 手续费 + "|" + QQ号码;
+                "提现|" + aliPayAccountName + "|" + aliPayNickName + "|"  + email + "|" + finalMoney + "|" + sxf + "|" + QQ号码;
+        System.out.println("提现命令:" + command);
         utils.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override
             public void getCallBack(String back) {

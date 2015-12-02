@@ -106,6 +106,7 @@ public class MainActivity extends BaseActivity
         getPreferenct().edit().putString(Const.ACCOUNT_LEVEL, "").commit();
         getPreferenct().edit().putString(Const.TODAY_PUSH_NUMS, "").commit();
         getPreferenct().edit().putString(Const.LOGIN_USER, "").commit();
+        getPreferenct().edit().putString(Const.LOGIN_PWD, "").commit();
         getPreferenct().edit().putString(Const.PUBLIC_ADS, "").commit();
         startActivity(new Intent(this, LoginActivity.class));
     }
@@ -229,6 +230,11 @@ public class MainActivity extends BaseActivity
 
     Dialog dialg;
     private void checkNetwork() {
+        // 如果当前Activity消失了，取消检查网络
+        if(MainActivity.this == null){
+            mHandler.removeMessages(CHECK_NETWORK);
+            return;
+        }
         System.out.println("tom-->check network!");
         if(!NetworkUtils.getNetworkEnable(getBaseContext())){
             TostHelper.shortToast(MainActivity.this, getString(R.string.network_not_work));

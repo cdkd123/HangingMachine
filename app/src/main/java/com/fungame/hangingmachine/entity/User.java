@@ -2,6 +2,8 @@ package com.fungame.hangingmachine.entity;
 
 import android.content.SharedPreferences;
 
+import java.math.BigDecimal;
+
 /**
  * Created by tom on 2015/11/13.
  * descripton :
@@ -29,7 +31,7 @@ public class User {
     }
 
     public String getSalarySpeed() {
-        return this.userLevel;
+        return this.userLevel ;
     }
 
     public String getAcountType() {
@@ -42,12 +44,9 @@ public class User {
 
     public void initDataFromPreference(SharedPreferences pref) {
         this.publishAds = pref.getString(Const.PUBLIC_ADS, "");
-        if(!this.publishAds.contains("公告")){
-            this.publishAds = "暂无公告";
-        }
         this.userName = pref.getString(Const.LOGIN_USER, "");
         String acType = pref.getString(Const.ACCOUNT_TYPE, "");
-        this.accountType = AccountType.TestType;
+        this.accountType = AccountType.FreeType;
         if(acType.equals(AccountType.NormalType.getName())) {
             accountType = AccountType.NormalType;
         }

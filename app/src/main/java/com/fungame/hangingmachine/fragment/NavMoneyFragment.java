@@ -86,13 +86,17 @@ public class NavMoneyFragment extends BaseFragment {
         String QQ号码 = etQQ.getText().toString();
         String sxf = "";
 
+        if("0".equals(upMoney) || "".equals(upMoney)){
+            TostHelper.shortToast(getContext(), "提现不能为0");
+            return;
+        }
         BigDecimal metaMoney = new BigDecimal(upMoney);
-        BigDecimal sxfMeta = new BigDecimal("0.1");
-        BigDecimal finalUpMoney = new BigDecimal("0.9");
+        BigDecimal sxfMeta = new BigDecimal("0.9");
+//        BigDecimal finalUpMoney = new BigDecimal("0.9");
         sxf = metaMoney.multiply(sxfMeta).toString();
-        String finalMoney = metaMoney.multiply(finalUpMoney).toString();
+//        String finalMoney = metaMoney.multiply(finalUpMoney).toString();
         String command =
-                "提现|" + aliPayAccountName + "|" + aliPayNickName + "|"  + email + "|" + finalMoney + "|" + sxf + "|" + QQ号码;
+                "提现|" + aliPayAccountName + "|" + aliPayNickName + "|"  + email + "|" + upMoney + "|" + sxf + "|" + QQ号码;
         System.out.println("提现命令:" + command);
         utils.sendCommand(command, new ServerUtils.SocketCallBack() {
             @Override

@@ -73,7 +73,7 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
         btnOpen.setOnClickListener(this);
         btnGetUser.setOnClickListener(this);
         btnOpenAuth.setOnClickListener(this);
-        list.add(new MyOpenUser("test", "test", "test", "2"));
+        list.add(new MyOpenUser("test", "test", "test", "test"));
         mAdapter = new DataAdapter(getActivity(), list);
         listView.setAdapter(mAdapter);
     }
@@ -131,10 +131,15 @@ public class UserManagerFragment extends BaseFragment implements View.OnClickLis
             @Override
             public void getCallBack(String back) {
                 if(!TextUtils.isEmpty(back)) {
+
 //                    TostHelper.shortToast(getActivity(), back);
                     int firstLine = back.indexOf("|");
                     String user = back.substring(firstLine + 1);
                     String[] users = user.split("\r\n");
+                    if(back.contains("您未开通")){
+                        TostHelper.shortToast(getActivity(), users[0]);
+                        return;
+                    }
                     if(users == null || user.length() == 0){
                         return;
                     }

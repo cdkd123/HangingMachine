@@ -39,8 +39,8 @@ public class LoginUtils {
                 saveInfo(pref, Const.ACCOUNT_LEVEL, loginInfos[3]);
                 saveInfo(pref, Const.TODAY_PUSH_NUMS, loginInfos[4]);
                 saveInfo(pref, Const.PUBLIC_ADS, loginInfos[5]);
-                saveInfo(pref, Const.CAN_GUAJI, loginInfos[6]);
-                saveInfo(pref, Const.CAN_JIAMAN, loginInfos[9]);
+                saveInfo(pref, Const.CAN_JIAMAN, loginInfos[6]);
+                saveInfo(pref, Const.CAN_GUAJI, loginInfos[9]);
                 saveInfo(pref, Const.LOGIN_USER, user);
                 saveInfo(pref, Const.LOGIN_PWD, pwd);
                 return true;

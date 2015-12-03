@@ -51,7 +51,7 @@ public class DataAdapter extends SimpleBaseAdapter<MyOpenUser> {
         final TextView tvLabel4 = holder.getView(R.id.tvLabel4);
         String label = meta.getUserName();
 
-        if("test".equals(meta.getUserName())){
+        if("testtest".equals(meta.getUserName() + meta.getLevel())){
             tvLabel1.setVisibility(View.INVISIBLE);
             tvLabel2.setVisibility(View.INVISIBLE);
             tvLabel3.setVisibility(View.INVISIBLE);

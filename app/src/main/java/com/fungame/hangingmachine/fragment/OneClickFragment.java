@@ -42,6 +42,7 @@ public class OneClickFragment extends BaseFragment {
     @Override
     public void initParams() {
         utils = new ServerUtils();
+        pref = getPreferenct(getContext());
     }
 
     @Override
@@ -58,14 +59,21 @@ public class OneClickFragment extends BaseFragment {
             public void onClick(View v) {
 
                 String guajiAuth = getPreferenct(v.getContext())
-                        .getString(Const.CAN_JIAMAN, "");
+                        .getString(Const.CAN_GUAJI, "");
 
                 // 如果不是正式版用户，不让加满
                 if(!isNormalUser()){
                     TostHelper.shortToast(getContext(), getContext().getString(R.string.not_normal_user));
                 }
 
-                if(!"真".equals(guajiAuth)){
+                final String user = getPreferenct(getContext()).getString(Const.LOGIN_USER, "");
+                String hasGuaiji = getPreferenct(getContext()).getString(user + "guaji", "not");
+                if("yes".equals(hasGuaiji)) {
+                    TostHelper.shortToast(getContext(), "已开通一键挂机");
+                    return;
+                }
+
+                if("假".equals(guajiAuth)){
                     // 一键挂机
                     String command = "开通挂满资格|0";
                     utils.sendCommand(command, new ServerUtils.SocketCallBack() {
@@ -73,15 +81,14 @@ public class OneClickFragment extends BaseFragment {
                         public void getCallBack(String back) {
                             if(!TextUtils.isEmpty(back)) {
                                 TostHelper.shortToast(getActivity(), back);
-                                LoginUtils.saveInfo(getPreferenct(getContext()),
-                                        Const.CAN_JIAMAN,
-                                        "真");
+                                LoginUtils.saveInfo(pref, user + "guaji", "yes");
+                                LoginUtils.saveInfo(pref, Const.CAN_GUAJI, "真");
                                 relogin();
                             }
                         }
                     });
                 } else {
-                    TostHelper.shortToast(getActivity(), v.getContext().getString(R.string.has_open_guaji));
+                    TostHelper.shortToast(getActivity(), "不具备挂机资格");
                 }
 
             }
@@ -91,29 +98,42 @@ public class OneClickFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
 
-                String jiamanAuth = getPreferenct(v.getContext()).getString(Const.LOGIN_USER + "jiamanAuth",
-                    "");
+                String guajiAuth = getPreferenct(v.getContext())
+                        .getString(Const.CAN_GUAJI, "");
                 // 如果不是正式版用户，不让加满
                 if(!isNormalUser()){
                     TostHelper.shortToast(getContext(), getContext().getString(R.string.not_normal_user));
                 }
 
-                if(!"true".equals(jiamanAuth)){
+                final String user = pref.getString(Const.LOGIN_USER, "");
+                String hasJiaman = pref.getString(user + "jiaman", "not");
+                if("yes".equals(hasJiaman)) {
+                    TostHelper.shortToast(getContext(), "已加满时间");
+                    return;
+                }
+
+                // 挂机时间不超过36000
+                String todayNum = getPreferenct(getContext()).getString(Const.TODAY_PUSH_NUMS, "0");
+                int todayNumber = Integer.valueOf(todayNum);
+                if(todayNumber > 36000){
+                    TostHelper.shortToast(getContext(), "已经加满");
+                    return;
+                }
+
+                if("真".equals(guajiAuth)){
                     String command = "加满时间|0";
                     utils.sendCommand(command, new ServerUtils.SocketCallBack() {
                         @Override
                         public void getCallBack(String back) {
                             if (!TextUtils.isEmpty(back)) {
-                                LoginUtils.saveInfo(getPreferenct(getContext()),
-                                        Const.LOGIN_USER + "jiamanAuth",
-                                        "true");
                                 TostHelper.shortToast(getActivity(), back);
+                                LoginUtils.saveInfo(pref, user + "jiaman", "yes");
                                 relogin();
                             }
                         }
                     });
                 } else {
-                    TostHelper.shortToast(getActivity(), v.getContext().getString(R.string.has_open_jiaman2));
+                    TostHelper.shortToast(getActivity(), "不能挂机");
                 }
 
 
@@ -155,7 +175,7 @@ public class OneClickFragment extends BaseFragment {
     }
 
     public boolean isNormalUser() {
-        SharedPreferences pref = getPreferenct(getContext());
+
         if(AccountType.NormalType.getName().equals(pref.getString(Const.ACCOUNT_TYPE, ""))) {
             return true;
         }

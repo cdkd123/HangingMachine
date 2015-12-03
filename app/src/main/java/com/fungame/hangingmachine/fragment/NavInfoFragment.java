@@ -117,13 +117,16 @@ public class NavInfoFragment extends BaseFragment {
         userItems.add(new UserItem(user.getUserName(), getString(R.string.modify_pwd)));
         userItems.add(new UserItem(user.getAcountType(), getString(R.string.update_user_level)));
         userItems.add(new UserItem(user.getAccountMoney(), getString(R.string.account_fill_money)));
-        String basicAdd = basicAddMeta().toString() + "/每小时";
+        String basicAdd = basicHourMeta().toString() + "元/每小时";
         userItems.add(new UserItem(basicAdd, getString(R.string.increase_commision)));
         userItems.add(new UserItem(user.getUserLevel(), getString(R.string.increase_level)));
         try{
             int todayNum = Integer.valueOf(user.getTodayNum());
+            if(todayNum > 36000){
+                todayNum = 36000;
+            }
             String pushTime = getSecond2HMS(todayNum);
-            userItems.add(new UserItem(user.getTodayNum(), getString(R.string.start_ads)));
+            userItems.add(new UserItem(pushTime, getString(R.string.start_ads)));
         } catch (NumberFormatException ex){
             ex.printStackTrace();
             int todayNum = 0;
@@ -346,13 +349,13 @@ public class NavInfoFragment extends BaseFragment {
             } else if(msg.what == STOP_GUAJI){
                 stopGuaji();
             } else if(msg.what == RELOGIN){
-                relogin();
+                relogin(true);
             }
         }
     };
 
 
-    private void relogin() {
+    private void relogin(final boolean flag) {
 
         // 如果没有网络，发送消息停止挂机，也不用loginle
         System.out.println("--tom: relogin");
@@ -381,8 +384,11 @@ public class NavInfoFragment extends BaseFragment {
                 } else {
                     System.out.println("--tom: login info empty");
                 }
-                mHandler.sendEmptyMessageDelayed(RELOGIN,
-                        DELAY_MILLIS);
+                if(flag){
+                    mHandler.sendEmptyMessageDelayed(RELOGIN,
+                            DELAY_MILLIS);
+                }
+
             }
         });
     }
@@ -397,10 +403,23 @@ public class NavInfoFragment extends BaseFragment {
         }
     }
 
-    private BigDecimal basicAddMeta() {
+    private BigDecimal basicHourMeta() {
         try{
             String sAccountLevel =  getPreferenct(getContext()).getString(Const.ACCOUNT_LEVEL, "1");
             BigDecimal meta = new BigDecimal("0.36");
+            BigDecimal level = new BigDecimal(sAccountLevel);
+            System.out.println("account level:" + sAccountLevel);
+            return meta.multiply(level);
+        } catch(NumberFormatException ex){
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    private BigDecimal basicAddMeta() {
+        try{
+            String sAccountLevel =  getPreferenct(getContext()).getString(Const.ACCOUNT_LEVEL, "1");
+            BigDecimal meta = new BigDecimal("0.0001");
             BigDecimal level = new BigDecimal(sAccountLevel);
             System.out.println("account level:" + sAccountLevel);
             return meta.multiply(level);
@@ -432,6 +451,9 @@ public class NavInfoFragment extends BaseFragment {
         System.out.println("meta:" + metaDecimal + "result:" + result);
 //         calc today push ads number
         int todayNum = Integer.valueOf(todayNums) + 1;
+        if(todayNum > 36000){
+            todayNum = 36000;
+        }
         LoginUtils.saveInfo(getPreferenct(getContext()), Const.TODAY_PUSH_NUMS, todayNum + "");
 
         try{
@@ -522,6 +544,7 @@ public class NavInfoFragment extends BaseFragment {
                             public void getCallBack(String back) {
                                 if (!TextUtils.isEmpty(back)) {
                                     TostHelper.shortToast(getActivity(), back);
+                                    relogin(false);
                                 }
                             }
                         });
@@ -558,6 +581,7 @@ public class NavInfoFragment extends BaseFragment {
     private void fillMoney2Account() {
 
         TostHelper.shortToast(getActivity(), "暂时不支持手机充值，请在window客户端充值");
+
     }
 
     private void updateUserLevel() {
